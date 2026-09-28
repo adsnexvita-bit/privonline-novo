@@ -3,25 +3,7 @@ import { ArrowRight } from "lucide-react";
 import { useEffect } from "react";
 import { Logo } from "@/components/Logo";
 
-const META_PIXEL_ID = "2553822528391189";
-const META_PIXEL_SCRIPT_ID = "famaflix-pv-meta-pixel";
 const PRESELL_SESSION_KEY = "famaflix:entered-via-pv";
-
-type MetaPixelFunction = {
-  (...args: unknown[]): void;
-  callMethod?: (...args: unknown[]) => void;
-  queue: unknown[][];
-  loaded: boolean;
-  version: string;
-  push: (...args: unknown[]) => void;
-};
-
-declare global {
-  interface Window {
-    fbq?: MetaPixelFunction;
-    _fbq?: MetaPixelFunction;
-  }
-}
 
 export const Route = createFileRoute("/pv")({
   head: () => ({
@@ -52,36 +34,6 @@ function PreSellPage() {
       // The page still works when browser storage is unavailable.
     }
 
-    if (!window.fbq) {
-      const fbq = function (...args: unknown[]) {
-        if (fbq.callMethod) {
-          fbq.callMethod(...args);
-        } else {
-          fbq.queue.push(args);
-        }
-      } as MetaPixelFunction;
-      fbq.queue = [];
-      fbq.loaded = true;
-      fbq.version = "2.0";
-      fbq.push = (...args: unknown[]) => fbq(...args);
-      window.fbq = fbq;
-      window._fbq = fbq;
-    }
-
-    if (!document.getElementById(META_PIXEL_SCRIPT_ID)) {
-      const script = document.createElement("script");
-      script.id = META_PIXEL_SCRIPT_ID;
-      script.async = true;
-      script.src = "https://connect.facebook.net/en_US/fbevents.js";
-      document.head.appendChild(script);
-    }
-
-    window.fbq("init", META_PIXEL_ID);
-    window.fbq("track", "PageView");
-
-    return () => {
-      document.getElementById(META_PIXEL_SCRIPT_ID)?.remove();
-    };
   }, []);
 
   return (
@@ -119,15 +71,7 @@ function PreSellPage() {
           Conteúdo destinado exclusivamente a maiores de 18 anos.
         </p>
 
-        <noscript>
-          <img
-            height="1"
-            width="1"
-            style={{ display: "none" }}
-            src={`https://www.facebook.com/tr?id=${META_PIXEL_ID}&ev=PageView&noscript=1`}
-            alt=""
-          />
-        </noscript>
+
       </section>
     </main>
   );

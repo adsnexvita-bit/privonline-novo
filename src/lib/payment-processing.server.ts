@@ -31,20 +31,6 @@ function mayTransition(current: OrderPaymentStatus, next: OrderPaymentStatus) {
   return true;
 }
 
-async function reportPaidOrderToMeta(supabaseAdmin: SupabaseClient<Database>, orderId: string) {
-  try {
-    const { sendMetaPurchaseForOrder } = await import("./meta-capi.server");
-    await sendMetaPurchaseForOrder(supabaseAdmin, orderId);
-  } catch (reason) {
-    // Measurement is deliberately secondary and already deduplicated by order.
-    console.error("payment:error", {
-      orderId,
-      stage: "meta_capi",
-      message: reason instanceof Error ? reason.message : String(reason),
-    });
-  }
-}
-
 async function notifyApprovedSale(supabaseAdmin: SupabaseClient<Database>, orderId: string) {
   try {
     const { notifyAdminsAboutApprovedSale } = await import("./admin-push.server");
@@ -166,7 +152,6 @@ export async function processPaymentConfirmation(
   const paid = effectiveStatus === "paid";
   if (transitionedToPaid) {
     await grantOrderAccess(supabaseAdmin, orderId);
-    await reportPaidOrderToMeta(supabaseAdmin, orderId);
     await notifyApprovedSale(supabaseAdmin, orderId);
   } else if (currentStatus === "paid") {
     // Repair only the critical entitlement after a previous partial failure.

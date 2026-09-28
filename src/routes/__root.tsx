@@ -17,7 +17,6 @@ import { captureMarketingAttribution } from "../lib/marketing-attribution";
 import { getErrorMessage, isChunkLoadError } from "../lib/error-recovery";
 import { ADMIN_PWA_BOOTSTRAP_SCRIPT } from "../lib/admin-pwa-bootstrap";
 import { RouteLoadingOverlay } from "../components/ui/RouteLoadingOverlay";
-import { UtmifyTracking } from "../components/UtmifyTracking";
 
 const CLARITY_PROJECT_ID = "xu390fh7gy";
 const GOOGLE_TAG_ID = "G-N90DLL0BJ4";
@@ -354,7 +353,6 @@ function RootComponent() {
       <AnonymousPresenceTracker />
       <AgeGate />
       <DeferredAnalytics />
-      <UtmifyTracking />
       <PublicContentProtection />
     </QueryClientProvider>
   );

@@ -7,12 +7,11 @@ import {
   createPurchase,
   getPromotionOrderBumps,
 } from "@/lib/purchase.functions";
-import { trackMetaCheckoutEvent } from "@/lib/meta-capi.functions";
 import { getCheckoutIdentity } from "@/lib/access.functions";
 import { getSession, setPaidAccountFlow, setSession } from "@/lib/session";
 import { onlyDigits } from "@/lib/cpf";
 import { formatPrice, resolveMediaUrl, type PublicModel } from "@/lib/models";
-import { getMarketingAttribution, getMarketingBrowserId } from "@/lib/marketing-attribution";
+import { getMarketingAttribution } from "@/lib/marketing-attribution";
 import type { PublicPlan } from "@/lib/model-plans.functions";
 import { parsePaymentProvider, type PaymentProvider } from "@/lib/payment-provider";
 
@@ -90,7 +89,6 @@ export function PurchaseModal({
   const purchase = useServerFn(createPurchase);
   const confirmPayment = useServerFn(confirmPurchasePayment);
   const checkoutIdentity = useServerFn(getCheckoutIdentity);
-  const trackCheckoutEvent = useServerFn(trackMetaCheckoutEvent);
   const loadOrderBumps = useServerFn(getPromotionOrderBumps);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -123,7 +121,6 @@ export function PurchaseModal({
   } | null>(null);
   const [selectedBumps, setSelectedBumps] = useState<Set<string>>(new Set());
   const [showAllBumps, setShowAllBumps] = useState(false);
-  const addPaymentInfoSent = useRef(false);
   const paidNotified = useRef(false);
   const pendingToken = useRef<string | null>(null);
 
@@ -174,58 +171,6 @@ export function PurchaseModal({
           .reduce((sum, item) => sum + item.price, 0)) *
         100,
     ) / 100;
-  const checkoutAttemptKey = [
-    "privacy.meta.ic.v1",
-    model.id,
-    plan?.id ?? "model",
-    plan?.offerId ?? "default",
-    offerCode ?? "regular",
-  ].join(":");
-
-  function eventExternalId() {
-    return getSession()?.customerId || getMarketingBrowserId();
-  }
-
-  function eventId(eventName: "InitiateCheckout" | "AddPaymentInfo") {
-    return [
-      "privacy",
-      eventName === "InitiateCheckout" ? "ic" : "api",
-      model.id,
-      plan?.id ?? "model",
-      plan?.offerId ?? "default",
-      offerCode ?? "regular",
-      eventExternalId(),
-    ].join("-");
-  }
-
-  async function sendCheckoutEventOnce(eventName: "InitiateCheckout" | "AddPaymentInfo") {
-    if (eventName === "InitiateCheckout" && typeof sessionStorage !== "undefined") {
-      const existing = sessionStorage.getItem(checkoutAttemptKey);
-      if (existing) return;
-      sessionStorage.setItem(checkoutAttemptKey, eventId(eventName));
-    }
-    if (eventName === "AddPaymentInfo") {
-      if (addPaymentInfoSent.current) return;
-      addPaymentInfoSent.current = true;
-    }
-    try {
-      await trackCheckoutEvent({
-        data: {
-          eventName,
-          eventId:
-            eventName === "InitiateCheckout" && typeof sessionStorage !== "undefined"
-              ? sessionStorage.getItem(checkoutAttemptKey) || eventId(eventName)
-              : eventId(eventName),
-          value: checkoutPrice,
-          externalId: eventExternalId(),
-          attribution: getMarketingAttribution(),
-        },
-      });
-    } catch {
-      // Eventos de marketing não podem bloquear checkout ou pagamento.
-    }
-  }
-
   function applyPurchase(res: PurchaseResult) {
     pendingToken.current = res.sessionToken;
     setSuccess({
@@ -295,13 +240,6 @@ export function PurchaseModal({
       active = false;
     };
   }, [loadOrderBumps, model.id, plan?.promotionId]);
-
-  useEffect(() => {
-    if (checkoutPhase !== "form" || success) return;
-    void sendCheckoutEventOnce("InitiateCheckout");
-    // The event must fire only when a new checkout form opens.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [checkoutPhase, success]);
 
   useEffect(() => {
     if (!success || paymentStatus === "paid") return;
@@ -393,7 +331,6 @@ export function PurchaseModal({
     setLoading(true);
     setCheckoutPhase("generating");
     try {
-      await sendCheckoutEventOnce("AddPaymentInfo");
       const res = await purchase({
         data: {
           modelId: model.id,

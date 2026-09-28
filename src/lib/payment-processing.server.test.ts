@@ -4,7 +4,6 @@ const {
   verifyPixCharge,
   grantedOrders,
   grantOrderAccess,
-  sendMetaPurchaseForOrder,
   notifyAdminsAboutApprovedSale,
 } = vi.hoisted(() => {
   const grantedOrders = new Set<string>();
@@ -14,14 +13,12 @@ const {
     grantOrderAccess: vi.fn(async (_db: unknown, orderId: string) => {
       grantedOrders.add(orderId);
     }),
-    sendMetaPurchaseForOrder: vi.fn(),
     notifyAdminsAboutApprovedSale: vi.fn(),
   };
 });
 
 vi.mock("./payment-provider.server", () => ({ verifyPixCharge }));
 vi.mock("./admin-orders.functions", () => ({ grantOrderAccess }));
-vi.mock("./meta-capi.server", () => ({ sendMetaPurchaseForOrder }));
 vi.mock("./admin-push.server", () => ({ notifyAdminsAboutApprovedSale }));
 
 import { processPaymentConfirmation } from "./payment-processing.server";
@@ -195,7 +192,6 @@ describe("processPaymentConfirmation", () => {
       payment_confirmed_by: "webhook",
     });
     expect(notifyAdminsAboutApprovedSale).toHaveBeenCalledTimes(1);
-    expect(sendMetaPurchaseForOrder).toHaveBeenCalledTimes(1);
   });
 
   it("lets only one of webhook, polling and reconciliation run paid effects", async () => {
@@ -226,7 +222,6 @@ describe("processPaymentConfirmation", () => {
 
     expect(results.filter((result) => result.transitionedToPaid)).toHaveLength(1);
     expect(grantOrderAccess).toHaveBeenCalledTimes(1);
-    expect(sendMetaPurchaseForOrder).toHaveBeenCalledTimes(1);
     expect(notifyAdminsAboutApprovedSale).toHaveBeenCalledTimes(1);
     expect(db.current()?.paid_at).toBe("2026-08-19T12:00:00Z");
   });

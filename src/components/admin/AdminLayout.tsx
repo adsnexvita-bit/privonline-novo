@@ -13,7 +13,6 @@ import {
   ExternalLink,
   BadgeDollarSign,
   Plug,
-  Megaphone,
   ChevronRight,
   BadgePercent,
   RefreshCw,
@@ -66,14 +65,9 @@ const navigationGroups: ReadonlyArray<{
   },
   {
     label: "Integrações",
-    to: "/admin/integracoes/meta-ads",
+    to: "/admin/configuracoes/pagamentos",
     icon: Plug,
     items: [
-      {
-        to: "/admin/integracoes/meta-ads",
-        label: "Rastreamento",
-        icon: Megaphone,
-      },
       { to: "/admin/configuracoes/pagamentos", label: "Pagamentos", icon: BadgeDollarSign },
     ],
   },

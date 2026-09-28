@@ -41,8 +41,6 @@ import { Route as CTokenRouteImport } from './routes/c.$token'
 import { Route as MinhasModelosSlugRouteImport } from './routes/minhas-modelos.$slug'
 import { Route as ModeloSlugRouteImport } from './routes/modelo.$slug'
 import { Route as AdminConfiguracoesPagamentosRouteImport } from './routes/admin.configuracoes.pagamentos'
-import { Route as AdminIntegracoesMetaAdsRouteImport } from './routes/admin.integracoes.meta-ads'
-import { Route as ApiInternalReconcileMetaRouteImport } from './routes/api.internal.reconcile-meta'
 import { Route as ApiInternalReconcilePaymentsRouteImport } from './routes/api.internal.reconcile-payments'
 import { Route as ApiPublicMediaRouteImport } from './routes/api.public.media'
 import { Route as ApiWebhooksSyncpayRouteImport } from './routes/api.webhooks.syncpay'
@@ -209,17 +207,6 @@ const AdminConfiguracoesPagamentosRoute =
     path: '/pagamentos',
     getParentRoute: () => AdminConfiguracoesRoute,
   } as any)
-const AdminIntegracoesMetaAdsRoute = AdminIntegracoesMetaAdsRouteImport.update({
-  id: '/admin/integracoes/meta-ads',
-  path: '/admin/integracoes/meta-ads',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiInternalReconcileMetaRoute =
-  ApiInternalReconcileMetaRouteImport.update({
-    id: '/api/internal/reconcile-meta',
-    path: '/api/internal/reconcile-meta',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 const ApiInternalReconcilePaymentsRoute =
   ApiInternalReconcilePaymentsRouteImport.update({
     id: '/api/internal/reconcile-payments',
@@ -276,8 +263,6 @@ export interface FileRoutesByFullPath {
   '/modelo/$slug': typeof ModeloSlugRoute
   '/admin/': typeof AdminIndexRoute
   '/admin/configuracoes/pagamentos': typeof AdminConfiguracoesPagamentosRoute
-  '/admin/integracoes/meta-ads': typeof AdminIntegracoesMetaAdsRoute
-  '/api/internal/reconcile-meta': typeof ApiInternalReconcileMetaRoute
   '/api/internal/reconcile-payments': typeof ApiInternalReconcilePaymentsRoute
   '/api/public/media': typeof ApiPublicMediaRoute
   '/api/webhooks/syncpay': typeof ApiWebhooksSyncpayRoute
@@ -316,8 +301,6 @@ export interface FileRoutesByTo {
   '/modelo/$slug': typeof ModeloSlugRoute
   '/admin': typeof AdminIndexRoute
   '/admin/configuracoes/pagamentos': typeof AdminConfiguracoesPagamentosRoute
-  '/admin/integracoes/meta-ads': typeof AdminIntegracoesMetaAdsRoute
-  '/api/internal/reconcile-meta': typeof ApiInternalReconcileMetaRoute
   '/api/internal/reconcile-payments': typeof ApiInternalReconcilePaymentsRoute
   '/api/public/media': typeof ApiPublicMediaRoute
   '/api/webhooks/syncpay': typeof ApiWebhooksSyncpayRoute
@@ -357,8 +340,6 @@ export interface FileRoutesById {
   '/modelo/$slug': typeof ModeloSlugRoute
   '/admin/': typeof AdminIndexRoute
   '/admin/configuracoes/pagamentos': typeof AdminConfiguracoesPagamentosRoute
-  '/admin/integracoes/meta-ads': typeof AdminIntegracoesMetaAdsRoute
-  '/api/internal/reconcile-meta': typeof ApiInternalReconcileMetaRoute
   '/api/internal/reconcile-payments': typeof ApiInternalReconcilePaymentsRoute
   '/api/public/media': typeof ApiPublicMediaRoute
   '/api/webhooks/syncpay': typeof ApiWebhooksSyncpayRoute
@@ -399,8 +380,6 @@ export interface FileRouteTypes {
     | '/modelo/$slug'
     | '/admin/'
     | '/admin/configuracoes/pagamentos'
-    | '/admin/integracoes/meta-ads'
-    | '/api/internal/reconcile-meta'
     | '/api/internal/reconcile-payments'
     | '/api/public/media'
     | '/api/webhooks/syncpay'
@@ -439,8 +418,6 @@ export interface FileRouteTypes {
     | '/modelo/$slug'
     | '/admin'
     | '/admin/configuracoes/pagamentos'
-    | '/admin/integracoes/meta-ads'
-    | '/api/internal/reconcile-meta'
     | '/api/internal/reconcile-payments'
     | '/api/public/media'
     | '/api/webhooks/syncpay'
@@ -479,8 +456,6 @@ export interface FileRouteTypes {
     | '/modelo/$slug'
     | '/admin/'
     | '/admin/configuracoes/pagamentos'
-    | '/admin/integracoes/meta-ads'
-    | '/api/internal/reconcile-meta'
     | '/api/internal/reconcile-payments'
     | '/api/public/media'
     | '/api/webhooks/syncpay'
@@ -518,8 +493,6 @@ export interface RootRouteChildren {
   CTokenRoute: typeof CTokenRoute
   ModeloSlugRoute: typeof ModeloSlugRoute
   AdminIndexRoute: typeof AdminIndexRoute
-  AdminIntegracoesMetaAdsRoute: typeof AdminIntegracoesMetaAdsRoute
-  ApiInternalReconcileMetaRoute: typeof ApiInternalReconcileMetaRoute
   ApiInternalReconcilePaymentsRoute: typeof ApiInternalReconcilePaymentsRoute
   ApiPublicMediaRoute: typeof ApiPublicMediaRoute
   ApiWebhooksSyncpayRoute: typeof ApiWebhooksSyncpayRoute
@@ -752,20 +725,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminConfiguracoesPagamentosRouteImport
       parentRoute: typeof AdminConfiguracoesRoute
     }
-    '/admin/integracoes/meta-ads': {
-      id: '/admin/integracoes/meta-ads'
-      path: '/admin/integracoes/meta-ads'
-      fullPath: '/admin/integracoes/meta-ads'
-      preLoaderRoute: typeof AdminIntegracoesMetaAdsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/internal/reconcile-meta': {
-      id: '/api/internal/reconcile-meta'
-      path: '/api/internal/reconcile-meta'
-      fullPath: '/api/internal/reconcile-meta'
-      preLoaderRoute: typeof ApiInternalReconcileMetaRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/internal/reconcile-payments': {
       id: '/api/internal/reconcile-payments'
       path: '/api/internal/reconcile-payments'
@@ -851,8 +810,6 @@ const rootRouteChildren: RootRouteChildren = {
   CTokenRoute: CTokenRoute,
   ModeloSlugRoute: ModeloSlugRoute,
   AdminIndexRoute: AdminIndexRoute,
-  AdminIntegracoesMetaAdsRoute: AdminIntegracoesMetaAdsRoute,
-  ApiInternalReconcileMetaRoute: ApiInternalReconcileMetaRoute,
   ApiInternalReconcilePaymentsRoute: ApiInternalReconcilePaymentsRoute,
   ApiPublicMediaRoute: ApiPublicMediaRoute,
   ApiWebhooksSyncpayRoute: ApiWebhooksSyncpayRoute,
