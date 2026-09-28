@@ -4,7 +4,7 @@ import { PRIMARY_PUBLIC_ORIGIN, publicUrl, resolvePublicOrigin } from "./public-
 describe("public origin", () => {
   it("uses the primary domain by default", () => {
     expect(resolvePublicOrigin()).toBe(PRIMARY_PUBLIC_ORIGIN);
-    expect(publicUrl("/c/abc")).toBe("https://privadinhos.online/c/abc");
+    expect(publicUrl("/c/abc")).toBe("https://privadinhos.store/c/abc");
   });
 
   it("replaces Vercel hosts with the primary domain", () => {

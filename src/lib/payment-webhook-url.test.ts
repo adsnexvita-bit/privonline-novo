@@ -21,11 +21,11 @@ describe("payment webhook URLs", () => {
   it("replaces Vercel domains with the primary public domain", () => {
     process.env.VERCEL_PROJECT_PRODUCTION_URL = "project.example.vercel.app";
     expect(buildPaymentWebhookUrl("syncpay", "order-3")).toBe(
-      "https://privadinhos.online/api/webhooks/syncpay?order_id=order-3",
+      "https://privadinhos.store/api/webhooks/syncpay?order_id=order-3",
     );
     expect(
       buildPaymentWebhookUrl("onpay", undefined, "https://privonline.vercel.app/checkout"),
-    ).toBe("https://privadinhos.online/api/public/webhooks/onpay");
+    ).toBe("https://privadinhos.store/api/public/webhooks/onpay");
   });
 
   it("rejects an insecure non-local webhook domain", () => {

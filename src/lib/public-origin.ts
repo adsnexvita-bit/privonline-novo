@@ -1,4 +1,4 @@
-export const PRIMARY_PUBLIC_ORIGIN = "https://privadinhos.online";
+export const PRIMARY_PUBLIC_ORIGIN = "https://privadinhos.store";
 
 export function resolvePublicOrigin(origin?: string | null) {
   const value = origin?.trim();
