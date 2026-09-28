@@ -6,6 +6,7 @@ import {
   Pencil,
   Trash2,
   Copy,
+  CopyPlus,
   Check,
   ExternalLink,
   Link2,
@@ -32,6 +33,7 @@ import syncPayLogo from "@/assets/syncpay-logo.png";
 import onPayLogo from "@/assets/onpay-logo.png";
 import { supabase } from "@/integrations/supabase/client";
 import { logAdminAction, slugify } from "@/lib/admin-helpers";
+import { duplicateModelAsAdmin } from "@/lib/model-duplication.functions";
 import { deleteModelsAsAdmin } from "@/lib/admin.functions";
 import { fetchInstagramProfileImage } from "@/lib/instagram-profile.functions";
 import {
@@ -196,6 +198,8 @@ function ModelsBody({ identity }: { identity: AdminIdentity }) {
   const [bulkOpen, setBulkOpen] = useState<null | "order" | "reorder">(null);
   const [busy, setBusy] = useState(false);
   const [copiedModelId, setCopiedModelId] = useState<string | null>(null);
+  const duplicateModelOnServer = useServerFn(duplicateModelAsAdmin);
+  const [duplicatingId, setDuplicatingId] = useState<string | null>(null);
   const deleteModelsOnServer = useServerFn(deleteModelsAsAdmin);
   const { confirmAction, confirmDialog } = useConfirmDialog();
 
@@ -253,6 +257,25 @@ function ModelsBody({ identity }: { identity: AdminIdentity }) {
       () => setCopiedModelId((current) => (current === model.id ? null : current)),
       1800,
     );
+  }
+
+  async function duplicate(model: ModelRow) {
+    if (busy) return;
+    setBusy(true);
+    setDuplicatingId(model.id);
+    setErr(null);
+    try {
+      const { id } = await duplicateModelOnServer({ data: { id: model.id } });
+      await reload();
+      const { data: copied, error } = await supabase.from("models").select("*").eq("id", id).single();
+      if (error) throw error;
+      setEditing(copied as ModelRow);
+    } catch (error) {
+      setErr(error instanceof Error ? error.message : "Não foi possível duplicar o perfil.");
+    } finally {
+      setBusy(false);
+      setDuplicatingId(null);
+    }
   }
 
   async function remove(id: string) {
@@ -502,6 +525,17 @@ function ModelsBody({ identity }: { identity: AdminIdentity }) {
                         >
                           <Copy className="h-3.5 w-3.5" />
                           {copiedModelId === r.id ? "Copiado" : "Link"}
+                        </button>
+                        <button
+                          type="button"
+                          disabled={busy}
+                          onClick={() => void duplicate(r)}
+                          aria-label={`Duplicar perfil de ${r.name}`}
+                          title="Duplicar perfil"
+                          className="flex items-center gap-1.5 rounded-lg border border-border px-2 py-2 text-xs font-semibold hover:bg-muted disabled:opacity-50"
+                        >
+                          {duplicatingId === r.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CopyPlus className="h-3.5 w-3.5" />}
+                          Duplicar
                         </button>
                         <button
                           type="button"

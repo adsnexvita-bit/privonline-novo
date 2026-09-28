@@ -1,6 +1,7 @@
 import {
   AbortMultipartUploadCommand,
   CompleteMultipartUploadCommand,
+  CopyObjectCommand,
   CreateMultipartUploadCommand,
   DeleteObjectCommand,
   GetObjectCommand,
@@ -204,4 +205,15 @@ export async function r2ObjectExists(key: string) {
   } catch {
     return false;
   }
+}
+
+/** Copy within R2 without downloading the object's contents to the server. */
+export async function copyR2Reference(reference: string, destinationKey: string) {
+  const sourceKey = r2KeyFromReference(reference);
+  if (!sourceKey || !isSafeR2Key(destinationKey)) throw new Error("Referência de mídia inválida.");
+  await r2Client().send(new CopyObjectCommand({
+    Bucket: bucket(), Key: destinationKey,
+    CopySource: `${bucket()}/${sourceKey.split("/").map(encodeURIComponent).join("/")}`,
+  }));
+  return r2Reference(destinationKey);
 }
