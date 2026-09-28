@@ -1168,7 +1168,7 @@ function ModelEditor({
                   placeholder="ninafoxie"
                 />
                 <p className="mt-1.5 text-xs text-muted-foreground">
-                  Link direto: privadinhos.online/
+                  Link direto: {resolvePublicOrigin().replace(/^https?:\/\//, "")}/
                   {normalizeModelUsername(form.username ?? "usuario")}
                 </p>
               </Field>
