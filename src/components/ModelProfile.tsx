@@ -48,6 +48,7 @@ import { TestimonialsCarousel } from "@/components/TestimonialsCarousel";
 import { listPublicModelTestimonials } from "@/lib/model-testimonials.functions";
 import { getPublicProfileSupportSettings } from "@/lib/profile-support-settings.functions";
 import type { PaymentProvider } from "@/lib/payment-provider";
+import { usePublicLocale, usePublicText } from "@/lib/locale";
 
 const PurchaseModal = lazy(async () => {
   const module = await import("@/components/PurchaseModal");
@@ -200,6 +201,8 @@ export function ModelProfile({
   model: PublicModel;
   forcedGateway?: PaymentProvider;
 }) {
+  const text = usePublicText();
+  const locale = usePublicLocale();
   const navigate = useNavigate();
   const fetchPreviewMedia = useServerFn(listModelPreviewMedia);
   const fetchPrivateMedia = useServerFn(listMyModelMedia);
@@ -389,11 +392,7 @@ export function ModelProfile({
       {showMemberHeader ? (
         <header className="fixed inset-x-0 top-0 z-50 bg-white/95 shadow-[0_2px_14px_rgba(30,24,20,0.07)] backdrop-blur-xl">
           <div className="mx-auto flex h-16 w-full max-w-[750px] items-center justify-between px-4 sm:px-6">
-            <Link
-              to="/"
-              aria-label="Ir para a página inicial"
-              className="inline-flex min-h-11 items-center"
-            >
+            <Link to="/" aria-label={text.nav.home} className="inline-flex min-h-11 items-center">
               <Logo className="h-8" />
             </Link>
             <Link
@@ -401,7 +400,7 @@ export function ModelProfile({
               className="inline-flex min-h-11 items-center gap-2 rounded-full border border-border bg-white px-4 text-sm font-semibold text-foreground transition hover:border-primary hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
             >
               <UserCircle2 className="h-4 w-4 text-primary" aria-hidden="true" />
-              Minha conta
+              {text.nav.myAccount}
             </Link>
           </div>
         </header>
@@ -422,7 +421,7 @@ export function ModelProfile({
                 onClick={() =>
                   window.history.length > 1 ? window.history.back() : navigate({ to: "/" })
                 }
-                aria-label="Voltar"
+                aria-label={text.profile.back}
                 className="absolute left-3 top-3 z-20 grid h-9 w-9 place-items-center rounded-full bg-white/90 text-foreground shadow-sm backdrop-blur-sm transition hover:bg-white"
               >
                 <ArrowLeft className="h-5 w-5" />
@@ -464,7 +463,7 @@ export function ModelProfile({
                     className="h-5 w-5 shrink-0 text-primary"
                     fill="currentColor"
                     stroke="white"
-                    aria-label="Perfil verificado"
+                    aria-label={text.profile.verified}
                   />
                 </h1>
                 <a
@@ -473,7 +472,7 @@ export function ModelProfile({
                 >
                   @{model.username}
                 </a>
-                <span className="ml-2 text-sm text-emerald-500">• Disponível agora</span>
+                <span className="ml-2 text-sm text-emerald-500">• {text.profile.availableNow}</span>
               </div>
 
               {!hasAccess && model.short_description ? (
@@ -486,7 +485,7 @@ export function ModelProfile({
                   href="#sobre"
                   className="mt-2 inline-flex text-sm font-semibold text-primary transition hover:text-primary-glow"
                 >
-                  Mais informações
+                  {text.profile.moreInfo}
                 </a>
               ) : null}
               {model.instagram_enabled && model.instagram_url ? (
@@ -531,12 +530,12 @@ export function ModelProfile({
               </div>
             ) : mediaQuery.isError && !hasAccess ? (
               <div className="rounded-2xl border border-destructive/40 bg-destructive/5 p-6 text-center text-sm text-muted-foreground">
-                Não foi possível carregar a galeria.
+                {text.profile.noGallery}
               </div>
             ) : gallery.length && hasAccess ? (
               <section className="profile-library-section" aria-labelledby="paid-library-title">
                 <h2 id="paid-library-title" className="sr-only">
-                  Conteúdos liberados
+                  {text.profile.unlockedContent}
                 </h2>
                 <PrivateContentLibrary
                   media={filteredPaidGallery}
@@ -547,18 +546,16 @@ export function ModelProfile({
                 {paidMediaFilter === "posts" ? (
                   postsQuery.isPending && postsQuery.fetchStatus !== "idle" ? (
                     <div className="py-12 text-center text-sm text-muted-foreground">
-                      Carregando postagens…
+                      {text.profile.loadingPosts}
                     </div>
                   ) : postsQuery.isError ? (
                     <div className="rounded-2xl border border-destructive/30 p-6 text-center">
-                      <p className="text-sm text-destructive">
-                        Não foi possível carregar as postagens.
-                      </p>
+                      <p className="text-sm text-destructive">{text.profile.noPosts}</p>
                       <button
                         onClick={() => postsQuery.refetch()}
                         className="mt-3 font-bold text-primary"
                       >
-                        Tentar novamente
+                        {text.profile.tryAgain}
                       </button>
                     </div>
                   ) : (
@@ -576,7 +573,7 @@ export function ModelProfile({
                 aria-labelledby="preview-title"
               >
                 <h2 id="preview-title" className="sr-only">
-                  Prévia do conteúdo
+                  {text.profile.previewContent}
                 </h2>
                 <div className="grid grid-cols-2">
                   <button
@@ -584,14 +581,14 @@ export function ModelProfile({
                     className="inline-flex min-h-14 items-center justify-center gap-2 border-b-2 border-transparent text-sm font-medium text-muted-foreground"
                   >
                     <FileText className="h-5 w-5" />
-                    {displayedPostsCount} POSTS
+                    {displayedPostsCount} {text.profile.posts}
                   </button>
                   <button
                     type="button"
                     className="inline-flex min-h-14 items-center justify-center gap-2 border-b-2 border-primary text-sm font-semibold text-primary"
                   >
                     <Images className="h-5 w-5" />
-                    {displayedPhotoCount + displayedVideoCount} MÍDIAS
+                    {displayedPhotoCount + displayedVideoCount} {text.profile.media}
                   </button>
                 </div>
                 <div className="grid grid-cols-2 gap-0.5 bg-white">
@@ -611,10 +608,8 @@ export function ModelProfile({
                 <div className="mx-auto grid h-20 w-20 place-items-center rounded-2xl bg-muted text-muted-foreground">
                   <Camera className="h-9 w-9" />
                 </div>
-                <p className="mt-4 font-bold">Nenhuma mídia publicada</p>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  As prévias selecionadas para este perfil aparecerão aqui.
-                </p>
+                <p className="mt-4 font-bold">{text.profile.noMediaTitle}</p>
+                <p className="mt-1 text-sm text-muted-foreground">{text.profile.noMediaBody}</p>
               </div>
             )}
 
@@ -643,7 +638,9 @@ export function ModelProfile({
               id="sobre"
               className="mt-10 max-w-5xl scroll-mt-40 rounded-xl border border-border bg-card p-5 shadow-card sm:mx-auto sm:p-6"
             >
-              <h2 className="text-xl font-medium">Sobre {model.name}</h2>
+              <h2 className="text-xl font-medium">
+                {text.profile.about} {model.name}
+              </h2>
               <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-muted-foreground sm:text-base">
                 {model.full_description}
               </p>
@@ -695,6 +692,7 @@ export function ModelProfile({
 }
 
 function ProfileTelegramSupport() {
+  const text = usePublicText();
   return (
     <section
       aria-labelledby="telegram-support-title"
@@ -704,7 +702,7 @@ function ProfileTelegramSupport() {
         id="telegram-support-title"
         className="mx-auto max-w-md text-base font-semibold leading-relaxed tracking-[-0.015em] text-foreground sm:text-lg"
       >
-        Comprou e teve problemas em seu acesso? Entre em contato conosco
+        {text.profile.supportTitle}
       </h2>
       <a
         href="https://t.me/feverbyoficial"
@@ -713,13 +711,14 @@ function ProfileTelegramSupport() {
         className="btn-primary mx-auto mt-5 inline-flex min-h-12 items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-bold sm:text-base"
       >
         <Send className="h-4 w-4" aria-hidden />
-        Entrar em contato
+        {text.profile.contact}
       </a>
     </section>
   );
 }
 
 function InstagramProfileCard({ url, imageUrl }: { url: string; imageUrl: string | null }) {
+  const text = usePublicText();
   const [imageFailed, setImageFailed] = useState(false);
   const username = getInstagramUsername(url);
 
@@ -746,9 +745,7 @@ function InstagramProfileCard({ url, imageUrl }: { url: string; imageUrl: string
           <h2 className="truncate text-lg font-semibold tracking-[-0.02em] text-[#172033] sm:text-xl">
             @{username ?? "instagram"}
           </h2>
-          <p className="mt-0.5 text-sm leading-snug text-[#667085]">
-            Acompanhe conteúdos e novidades no Instagram
-          </p>
+          <p className="mt-0.5 text-sm leading-snug text-[#667085]">{text.profile.instagramBody}</p>
         </div>
       </div>
       <a
@@ -758,7 +755,7 @@ function InstagramProfileCard({ url, imageUrl }: { url: string; imageUrl: string
         className="mt-3 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-[#e1306c]/35 bg-[#fff7fa] px-4 py-2.5 text-center text-sm font-semibold text-[#c52f68] transition hover:bg-[#fff0f5] active:scale-[0.99] sm:mt-4 sm:w-auto"
       >
         <Instagram className="h-4 w-4" aria-hidden />
-        Ver perfil no Instagram
+        {text.profile.instagramButton}
       </a>
     </section>
   );
@@ -826,6 +823,7 @@ function AccessPlansCard({
   fallbackPrice: number;
   onSelect: (plan: PublicPlan | null) => void;
 }) {
+  const text = usePublicText();
   const planKey = (plan: PublicPlan) => `${plan.id}:${plan.offerId ?? "base"}`;
   const visiblePlans = plans.filter((plan) => plan.price > 0);
   const primary = visiblePlans[0] ?? null;
@@ -846,14 +844,18 @@ function AccessPlansCard({
   return (
     <section data-offer-layout="profile-subscription" aria-labelledby="subscription-title">
       <h2 id="subscription-title" className="mb-2 text-base font-medium text-foreground">
-        Assinatura
+        {text.profile.subscription}
       </h2>
       <button
         type="button"
         onClick={() => onSelect(primary)}
         className="flex h-11 w-full items-center justify-between gap-4 rounded-full bg-primary p-3 text-left text-sm font-medium leading-5 text-white transition hover:bg-primary/80 active:scale-[0.99]"
       >
-        <span>{primary ? formatPlanDuration(primary).toUpperCase() : "1 MÊS"}</span>
+        <span>
+          {primary
+            ? formatPlanDuration(primary, locale).toLocaleUpperCase(locale)
+            : text.profile.oneMonth}
+        </span>
         <span className="shrink-0 text-right">{formatPrice(primary?.price ?? fallbackPrice)}</span>
       </button>
 
@@ -871,8 +873,8 @@ function AccessPlansCard({
                 >
                   <span>
                     {plan.accessType === "lifetime"
-                      ? "ACESSO VITALÍCIO"
-                      : formatPlanDuration(plan).toUpperCase()}
+                      ? text.profile.lifetime
+                      : formatPlanDuration(plan, locale).toLocaleUpperCase(locale)}
                     {discount ? <small className="ml-1.5 font-medium">({discount})</small> : null}
                   </span>
                   <span className="shrink-0">{formatPrice(plan.price)}</span>
@@ -886,8 +888,8 @@ function AccessPlansCard({
   );
 }
 
-function formatPlanDuration(plan: PublicPlan) {
-  return formatPlanDurationDays(plan.durationDays ?? 30);
+function formatPlanDuration(plan: PublicPlan, locale: "pt-BR" | "es") {
+  return formatPlanDurationDays(plan.durationDays ?? 30, locale);
 }
 
 function PrivateContentLibrary({
@@ -901,16 +903,17 @@ function PrivateContentLibrary({
   onFilterChange: (filter: "posts" | "video" | "image") => void;
   onOpen: (media: GalleryMedia) => void;
 }) {
+  const text = usePublicText();
   const filters = [
-    { id: "posts" as const, label: "Posts", icon: FileText },
-    { id: "video" as const, label: "Vídeos", icon: Video },
-    { id: "image" as const, label: "Fotos", icon: Images },
+    { id: "posts" as const, label: text.profile.filters.posts, icon: FileText },
+    { id: "video" as const, label: text.profile.filters.videos, icon: Video },
+    { id: "image" as const, label: text.profile.filters.photos, icon: Images },
   ];
 
   return (
     <section
       className="mx-auto w-full max-w-3xl overflow-hidden bg-white"
-      aria-label="Conteúdos liberados"
+      aria-label={text.profile.filters.released}
     >
       <div className="grid grid-cols-3">
         {filters.map((item) => {
@@ -942,7 +945,10 @@ function PrivateContentLibrary({
               onClick={() => onOpen(item)}
               className="group relative aspect-square overflow-hidden bg-[#151515] text-left focus:outline-none focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-primary"
               aria-label={
-                item.title ?? (item.media_type === "video" ? "Assistir vídeo" : "Abrir foto")
+                item.title ??
+                (item.media_type === "video"
+                  ? text.profile.filters.watchVideo
+                  : text.profile.filters.openPhoto)
               }
             >
               {item.media_type === "video" ? (
@@ -977,7 +983,7 @@ function PrivateContentLibrary({
         </div>
       ) : (
         <div className="px-5 py-10 text-center text-sm text-muted-foreground">
-          Nenhum {filter === "video" ? "vídeo" : "conteúdo"} publicado ainda.
+          {text.profile.filters.empty(filter)}
         </div>
       )}
     </section>
@@ -995,13 +1001,16 @@ function PreviewPostCard({
   locked: boolean;
   onOpen: () => void;
 }) {
+  const text = usePublicText();
   return (
     <article className="relative aspect-square overflow-hidden bg-[#edf0f2]">
       <button
         type="button"
         onClick={onOpen}
         className="group relative block h-full w-full overflow-hidden"
-        aria-label={locked ? "Liberar acesso a esta prévia" : (media.title ?? "Abrir mídia")}
+        aria-label={
+          locked ? text.profile.preview.unlock : (media.title ?? text.profile.preview.open)
+        }
       >
         {media.media_type === "video" ? (
           <VideoThumbnail
@@ -1029,7 +1038,9 @@ function PreviewPostCard({
             <span className="grid h-10 w-10 place-items-center rounded-full bg-black/35 backdrop-blur-sm">
               <LockKeyhole className="h-5 w-5" strokeWidth={2} />
             </span>
-            <span className="text-[11px] font-semibold drop-shadow">Exclusivo</span>
+            <span className="text-[11px] font-semibold drop-shadow">
+              {text.profile.preview.exclusive}
+            </span>
           </span>
         ) : null}
       </button>
@@ -1038,6 +1049,7 @@ function PreviewPostCard({
 }
 
 function NeedsLoginModal({ onClose, onConfirm }: { onClose: () => void; onConfirm: () => void }) {
+  const text = usePublicText();
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 p-4 backdrop-blur"
@@ -1050,23 +1062,20 @@ function NeedsLoginModal({ onClose, onConfirm }: { onClose: () => void; onConfir
         <div className="mb-3 grid h-12 w-12 place-items-center rounded-2xl bg-primary/10 text-primary">
           <Heart className="h-6 w-6" />
         </div>
-        <h3 className="text-lg font-bold">Acesse com seu telefone para curtir</h3>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Suas curtidas ficam salvas na sua conta. Informe o telefone utilizado na compra para
-          continuar.
-        </p>
+        <h3 className="text-lg font-bold">{text.profile.login.title}</h3>
+        <p className="mt-2 text-sm text-muted-foreground">{text.profile.login.body}</p>
         <div className="mt-5 flex gap-2">
           <button
             onClick={onClose}
             className="flex-1 rounded-xl border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-foreground hover:border-primary"
           >
-            Agora não
+            {text.profile.login.later}
           </button>
           <button
             onClick={onConfirm}
             className="btn-primary flex-1 rounded-xl py-2.5 text-sm font-bold"
           >
-            Ir para /acesso
+            {text.profile.login.access}
           </button>
         </div>
       </div>
@@ -1085,6 +1094,7 @@ function Lightbox({
   avatar: string;
   onClose: () => void;
 }) {
+  const text = usePublicText();
   const [muted, setMuted] = useState(false);
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -1116,7 +1126,7 @@ function Lightbox({
             <button
               onClick={onClose}
               className="grid h-11 w-11 place-items-center rounded-full bg-black/45 text-white backdrop-blur hover:bg-black/65"
-              aria-label="Fechar"
+              aria-label={text.profile.audio.close}
             >
               <X className="h-6 w-6" />
             </button>
@@ -1151,7 +1161,7 @@ function Lightbox({
             type="button"
             onClick={() => setMuted((value) => !value)}
             className="absolute bottom-5 right-5 z-20 grid h-12 w-12 place-items-center rounded-full border border-white/20 bg-black/50 text-white backdrop-blur transition hover:bg-black/70"
-            aria-label={muted ? "Ativar som" : "Silenciar"}
+            aria-label={muted ? text.profile.audio.soundOn : text.profile.audio.mute}
           >
             {muted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
           </button>
@@ -1176,6 +1186,7 @@ function MobileMediaViewer({
   avatar: string;
   onClose: () => void;
 }) {
+  const text = usePublicText();
   const [index, setIndex] = useState(Math.min(initialIndex, media.length - 1));
   const [progress, setProgress] = useState(0);
   const [paused, setPaused] = useState(false);
@@ -1395,7 +1406,7 @@ function MobileMediaViewer({
           </div>
           <button
             type="button"
-            aria-label="Fechar visualizador"
+            aria-label={text.profile.audio.close}
             onPointerDown={(event) => event.stopPropagation()}
             onClick={() => window.history.back()}
             className="grid h-11 w-11 place-items-center rounded-full border border-white/20 bg-black/45 backdrop-blur"
@@ -1451,7 +1462,7 @@ function MobileMediaViewer({
           onPointerDown={(event) => event.stopPropagation()}
           onClick={() => setMuted((value) => !value)}
           className="absolute bottom-[max(1.5rem,env(safe-area-inset-bottom))] right-5 z-30 grid h-11 w-11 place-items-center rounded-full border border-white/20 bg-black/45 text-white backdrop-blur transition hover:bg-black/65"
-          aria-label={muted ? "Ativar som" : "Silenciar"}
+          aria-label={muted ? text.profile.audio.soundOn : text.profile.audio.mute}
         >
           {muted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
         </button>

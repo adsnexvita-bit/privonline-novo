@@ -6,14 +6,16 @@ import { Logo } from "./Logo";
 import { getSession, clearSession, type CpfSession } from "@/lib/session";
 import { useServerFn } from "@tanstack/react-start";
 import { endPhoneSession } from "@/lib/access.functions";
+import { usePublicText } from "@/lib/locale";
 
 const navLinks = [
-  { to: "/", label: "Biblioteca" },
-  { to: "/categorias", label: "Categorias" },
-  { to: "/minhas-modelos", label: "Minhas Galerias" },
+  { to: "/", labelKey: "library" },
+  { to: "/categorias", labelKey: "categories" },
+  { to: "/minhas-modelos", labelKey: "myGalleries" },
 ] as const;
 
 export function Header() {
+  const text = usePublicText();
   const [open, setOpen] = useState(false);
   const [session, setSession] = useState<CpfSession | null>(null);
   const endSession = useServerFn(endPhoneSession);
@@ -84,7 +86,7 @@ export function Header() {
                   className="border-b-2 border-transparent py-6 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
                   activeProps={{ className: "border-primary text-foreground" }}
                 >
-                  {link.label}
+                  {text.nav[link.labelKey]}
                 </Link>
               ))}
             </nav>
@@ -92,7 +94,7 @@ export function Header() {
 
           <Link
             to="/"
-            aria-label="Ir para a página inicial"
+            aria-label={text.nav.home}
             className={`${isHome ? "mx-auto" : "mr-auto"} flex shrink-0 items-center`}
           >
             <Logo className="h-8 sm:h-9 md:h-10" />
@@ -105,15 +107,15 @@ export function Header() {
                 className="inline-flex min-h-11 items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-semibold text-foreground hover:border-primary"
               >
                 <UserCircle2 className="h-4 w-4 text-primary" />
-                Minha conta
+                {text.nav.myAccount}
               </Link>
               {session ? (
-                  <button
-                    onClick={logout}
-                    className="inline-flex min-h-11 items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-semibold text-foreground hover:border-primary"
-                  >
-                    <LogOut className="h-3.5 w-3.5" /> Sair
-                  </button>
+                <button
+                  onClick={logout}
+                  className="inline-flex min-h-11 items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-semibold text-foreground hover:border-primary"
+                >
+                  <LogOut className="h-3.5 w-3.5" /> {text.nav.logout}
+                </button>
               ) : null}
             </div>
           ) : (
@@ -122,13 +124,13 @@ export function Header() {
               className="inline-flex min-h-11 items-center gap-1.5 justify-self-end rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-semibold text-foreground transition-colors hover:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 sm:px-4 sm:text-sm"
             >
               <UserCircle2 className="h-4 w-4 text-primary" />
-              Minha conta
+              {text.nav.myAccount}
             </Link>
           )}
 
           {isHome ? (
             <button
-              aria-label="Abrir menu"
+              aria-label={text.nav.openMenu}
               className="grid h-11 w-11 place-items-center rounded-full border border-border bg-white text-foreground md:hidden"
               onClick={() => setOpen(true)}
             >
@@ -143,7 +145,7 @@ export function Header() {
             <>
               <button
                 type="button"
-                aria-label="Fechar menu"
+                aria-label={text.nav.closeMenu}
                 className="fixed inset-0 z-[90] bg-black/35 backdrop-blur-sm md:hidden"
                 onClick={() => setOpen(false)}
               />
@@ -151,7 +153,7 @@ export function Header() {
                 className="public-theme public-glass fixed inset-x-3 top-3 z-[100] max-h-[calc(100dvh-1.5rem)] overflow-y-auto rounded-2xl p-4 md:hidden"
                 role="dialog"
                 aria-modal="true"
-                aria-label="Menu principal"
+                aria-label={text.nav.mainMenu}
               >
                 <div className="flex items-center justify-between border-b border-border pb-4">
                   <Link to="/" onClick={() => setOpen(false)}>
@@ -160,14 +162,14 @@ export function Header() {
                   <button
                     type="button"
                     onClick={() => setOpen(false)}
-                    aria-label="Fechar menu"
+                    aria-label={text.nav.closeMenu}
                     className="grid h-12 w-12 place-items-center rounded-full border border-primary/50 bg-surface text-foreground shadow-[0_0_0_3px_rgba(255,92,0,0.14)]"
                   >
                     <X className="h-5 w-5" />
                   </button>
                 </div>
 
-                <nav className="mt-3 flex flex-col gap-1" aria-label="Navegação móvel">
+                <nav className="mt-3 flex flex-col gap-1" aria-label={text.nav.mainMenu}>
                   {navLinks.map((l) => (
                     <Link
                       key={l.to}
@@ -175,7 +177,7 @@ export function Header() {
                       onClick={() => setOpen(false)}
                       className="flex min-h-12 items-center rounded-xl px-4 py-3 text-base font-semibold text-muted-foreground hover:bg-surface hover:text-foreground"
                     >
-                      {l.label}
+                      {text.nav[l.labelKey]}
                     </Link>
                   ))}
                 </nav>
@@ -184,15 +186,15 @@ export function Header() {
                   onClick={() => setOpen(false)}
                   className="mt-2 inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-border bg-surface px-4 py-3 text-base font-semibold text-foreground"
                 >
-                  <UserCircle2 className="h-4 w-4 text-primary" /> Minha conta
+                  <UserCircle2 className="h-4 w-4 text-primary" /> {text.nav.myAccount}
                 </Link>
                 {session ? (
-                    <button
-                      onClick={logout}
-                      className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-border bg-surface px-4 py-3 text-base font-semibold text-foreground"
-                    >
-                      <LogOut className="h-4 w-4" /> Sair ({session.name.split(" ")[0]})
-                    </button>
+                  <button
+                    onClick={logout}
+                    className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-border bg-surface px-4 py-3 text-base font-semibold text-foreground"
+                  >
+                    <LogOut className="h-4 w-4" /> {text.nav.logout} ({session.name.split(" ")[0]})
+                  </button>
                 ) : null}
               </div>
             </>,

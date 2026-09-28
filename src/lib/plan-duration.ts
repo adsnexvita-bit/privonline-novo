@@ -28,13 +28,21 @@ export function planDurationFromDays(days: number): {
   return { value: days, unit: "days" };
 }
 
-export function formatPlanDurationDays(days: number) {
+export function formatPlanDurationDays(days: number, locale: "pt-BR" | "es" = "pt-BR") {
   const duration = planDurationFromDays(days);
-  const labels: Record<PlanDurationUnit, [string, string]> = {
-    days: ["Dia", "Dias"],
-    weeks: ["Semana", "Semanas"],
-    months: ["Mês", "Meses"],
-    years: ["Ano", "Anos"],
-  };
+  const labels: Record<PlanDurationUnit, [string, string]> =
+    locale === "es"
+      ? {
+          days: ["Día", "Días"],
+          weeks: ["Semana", "Semanas"],
+          months: ["Mes", "Meses"],
+          years: ["Año", "Años"],
+        }
+      : {
+          days: ["Dia", "Dias"],
+          weeks: ["Semana", "Semanas"],
+          months: ["Mês", "Meses"],
+          years: ["Ano", "Anos"],
+        };
   return `${duration.value} ${labels[duration.unit][duration.value === 1 ? 0 : 1]}`;
 }

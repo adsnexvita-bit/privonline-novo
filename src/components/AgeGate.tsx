@@ -1,12 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import { Logo } from "./Logo";
 import { getSession } from "@/lib/session";
+import { usePublicText } from "@/lib/locale";
 
 const KEY = "famaflix:age-confirmed-at";
 const PRESELL_SESSION_KEY = "famaflix:entered-via-pv";
 const AGE_CONFIRMATION_DURATION = 4 * 60 * 60 * 1000;
 
 export function AgeGate() {
+  const text = usePublicText();
   const [ready, setReady] = useState(false);
   const [confirmed, setConfirmed] = useState(true);
   const accepting = useRef(false);
@@ -65,11 +67,9 @@ export function AgeGate() {
       <div className="w-full max-w-xl rounded-[2rem] bg-white px-6 py-10 text-[#111] shadow-2xl sm:rounded-[2.5rem] sm:px-12 sm:py-14">
         <Logo className="mx-auto h-10 sm:h-12" />
         <h2 className="mt-12 text-3xl font-black tracking-[-0.035em] sm:text-4xl">
-          Confirmação de Idade
+          {text.ageGate.title}
         </h2>
-        <p className="mt-6 text-lg leading-relaxed text-[#666] sm:text-xl">
-          Por favor, confirme sua idade para continuar.
-        </p>
+        <p className="mt-6 text-lg leading-relaxed text-[#666] sm:text-xl">{text.ageGate.body}</p>
         <div className="mt-9">
           <button
             type="button"
@@ -77,17 +77,17 @@ export function AgeGate() {
             onClick={accept}
             className="min-h-16 w-full touch-manipulation rounded-2xl bg-[#ff7818] px-5 py-4 text-lg font-black text-white transition hover:bg-[#f1690b] active:scale-[0.99] sm:text-xl"
           >
-            Tenho mais de 18 anos
+            {text.ageGate.button}
           </button>
         </div>
       </div>
       <nav className="mt-10 flex items-center justify-center gap-2 text-base text-white/65 sm:text-lg">
         <a href="/privacidade" className="transition hover:text-white">
-          Política de Privacidade
+          {text.ageGate.privacy}
         </a>
         <span aria-hidden>•</span>
         <a href="/termos" className="transition hover:text-white">
-          Termos de Uso
+          {text.ageGate.terms}
         </a>
       </nav>
     </div>

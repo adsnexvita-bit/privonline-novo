@@ -14,6 +14,7 @@ import { formatPrice, resolveMediaUrl, type PublicModel } from "@/lib/models";
 import { getMarketingAttribution } from "@/lib/marketing-attribution";
 import type { PublicPlan } from "@/lib/model-plans.functions";
 import { parsePaymentProvider, type PaymentProvider } from "@/lib/payment-provider";
+import { usePublicText } from "@/lib/locale";
 
 type PurchaseResult = {
   orderId: string;
@@ -27,12 +28,12 @@ type PurchaseResult = {
   customerName: string;
 };
 
-function friendlyPurchaseError(error: unknown): string {
+function friendlyPurchaseError(error: unknown, text: ReturnType<typeof usePublicText>): string {
   const message = error instanceof Error ? error.message : "";
   if (/supabase|service_role|chave privada|configuração.+ausente/i.test(message)) {
-    return "O pagamento está temporariamente indisponível. Aguarde alguns instantes e tente novamente.";
+    return text.checkout.unavailable;
   }
-  return message || "Falha ao gerar pagamento. Tente novamente.";
+  return message || text.checkout.failure;
 }
 
 function isLocalPreview() {
@@ -86,6 +87,7 @@ export function PurchaseModal({
   plan?: PublicPlan | null;
   forcedGateway?: PaymentProvider;
 }) {
+  const text = usePublicText();
   const purchase = useServerFn(createPurchase);
   const confirmPayment = useServerFn(confirmPurchasePayment);
   const checkoutIdentity = useServerFn(getCheckoutIdentity);
@@ -286,7 +288,7 @@ export function PurchaseModal({
     if (!success || checkingPayment) return;
     const token = pendingToken.current;
     if (!token) {
-      setPaymentCheckError("Sua sessão expirou. Entre novamente em Minha conta.");
+      setPaymentCheckError(text.checkout.expiredSession);
       return;
     }
     setCheckingPayment(true);
@@ -302,16 +304,10 @@ export function PurchaseModal({
       setPaymentStatus(result.status);
       applyConfirmedAccountFlow(result);
       if (result.status !== "paid") {
-        setPaymentCheckError(
-          "Ainda não consta o pagamento no sistema. Caso já tenha pagado, espere mais alguns segundos e tente novamente. Caso ainda não tenha pago, efetue o pagamento.",
-        );
+        setPaymentCheckError(text.checkout.notPaidYet);
       }
     } catch (err) {
-      setPaymentCheckError(
-        err instanceof Error
-          ? err.message
-          : "Não foi possível confirmar agora. Aguarde alguns segundos e tente novamente.",
-      );
+      setPaymentCheckError(err instanceof Error ? err.message : text.checkout.cannotConfirm);
     } finally {
       setCheckingPayment(false);
     }
@@ -321,11 +317,7 @@ export function PurchaseModal({
     e.preventDefault();
     setError(null);
     if (!canSubmit) {
-      setError(
-        name.trim().length < 2
-          ? "Informe seu nome e sobrenome."
-          : "Informe um telefone válido com DDD.",
-      );
+      setError(name.trim().length < 2 ? text.checkout.missingName : text.checkout.invalidPhone);
       return;
     }
     setLoading(true);
@@ -361,7 +353,7 @@ export function PurchaseModal({
         applyLocalPreviewPurchase();
         return;
       }
-      setError(friendlyPurchaseError(err));
+      setError(friendlyPurchaseError(err, text));
       setCheckoutPhase("form");
     } finally {
       setLoading(false);
@@ -379,7 +371,7 @@ export function PurchaseModal({
       >
         <button
           onClick={onClose}
-          aria-label="Fechar"
+          aria-label={text.checkout.close}
           className="absolute right-4 top-4 z-10 grid h-11 w-11 place-items-center rounded-full text-[#999] transition hover:bg-[#f4f4f4] hover:text-[#444] sm:right-6 sm:top-6"
         >
           <X className="h-7 w-7" />
@@ -401,7 +393,7 @@ export function PurchaseModal({
               <span className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-[#fff1e9] text-primary">
                 <Loader2 className="h-8 w-8 animate-spin" />
               </span>
-              <h2 className="mt-5 text-xl font-bold text-[#333]">Gerando PIX...</h2>
+              <h2 className="mt-5 text-xl font-bold text-[#333]">{text.checkout.generatingPix}</h2>
             </div>
           </div>
         ) : (
@@ -414,26 +406,25 @@ export function PurchaseModal({
                   className="h-12 w-12 shrink-0 rounded-full border border-[#f0ddd5] bg-[#f7f3f1] object-cover shadow-sm sm:h-14 sm:w-14"
                 />
                 <h2 className="min-w-0 text-xl font-extrabold leading-tight text-[#252525] sm:text-2xl">
-                  🔥 Desbloqueie acesso aos conteúdos de {model.name}
+                  {text.checkout.unlockTitle(model.name)}
                 </h2>
               </div>
               <p className="mt-3 text-sm leading-relaxed text-[#666]">
-                Informe seu nome e telefone para gerar o PIX e liberar o acesso ao conteúdo de{" "}
-                {model.name}.
+                {text.checkout.unlockBody(model.name)}
               </p>
             </div>
 
             <form onSubmit={submit} className="mt-7 space-y-4" noValidate>
-              <Field label="Nome e sobrenome" required>
+              <Field label={text.checkout.nameLabel} required>
                 <input
                   autoComplete="name"
                   value={name}
                   onChange={(event) => setName(capitalizeNameWords(event.target.value))}
-                  placeholder="Como podemos te chamar?"
+                  placeholder={text.checkout.namePlaceholder}
                   className={inputCls}
                 />
               </Field>
-              <Field label="Telefone" required>
+              <Field label={text.checkout.phoneLabel} required>
                 <div className="flex min-h-14 w-full items-stretch overflow-hidden rounded-2xl border-2 border-[#dedede] bg-white transition focus-within:border-primary">
                   <span
                     className="flex shrink-0 items-center gap-2 border-r border-[#e5e1df] px-3 text-base font-bold text-[#383230] sm:px-4"
@@ -454,7 +445,7 @@ export function PurchaseModal({
                 </div>
               </Field>
               <p id="checkout-phone-help" className="text-sm leading-relaxed text-[#666]">
-                Usaremos seu telefone para identificar sua compra e liberar o acesso com segurança.
+                {text.checkout.phoneHelp}
               </p>
               <label className="flex min-h-12 cursor-pointer items-center gap-3 rounded-2xl border border-[#dedede] bg-white px-4 py-3 text-sm font-semibold text-[#333] transition hover:border-primary/60">
                 <input
@@ -465,7 +456,7 @@ export function PurchaseModal({
                   }}
                   className="h-5 w-5 shrink-0 accent-[hsl(var(--primary))]"
                 />
-                Quero receber mensagens e novidades pelo WhatsApp.
+                {text.checkout.whatsappOptIn}
               </label>
 
               {orderBump?.enabled && orderBump.items.length ? (
@@ -500,7 +491,7 @@ export function PurchaseModal({
                               <strong className="block truncate text-sm text-[#292929]">
                                 {item.name}
                               </strong>
-                              <small className="text-[#777]">Acesso vitalício</small>
+                              <small className="text-[#777]">{text.checkout.lifetimeAccess}</small>
                             </span>
                             <span className="text-right">
                               <b className="block text-sm tabular-nums text-primary">
@@ -509,7 +500,7 @@ export function PurchaseModal({
                               <small
                                 className={`font-bold ${selected ? "text-emerald-600" : "text-[#777]"}`}
                               >
-                                {selected ? "✓ Adicionado" : "+ Adicionar"}
+                                {selected ? text.checkout.added : text.checkout.add}
                               </small>
                             </span>
                           </button>
@@ -522,7 +513,7 @@ export function PurchaseModal({
                       onClick={() => setShowAllBumps((value) => !value)}
                       className="mt-3 w-full text-center text-sm font-bold text-primary"
                     >
-                      {showAllBumps ? "Ver menos modelos" : "Ver mais modelos"}
+                      {showAllBumps ? text.checkout.seeLessModels : text.checkout.seeMoreModels}
                     </button>
                   ) : null}
                 </section>
@@ -531,7 +522,7 @@ export function PurchaseModal({
               {selectedBumps.size ? (
                 <div className="rounded-xl bg-[#f6f3f1] px-4 py-3 text-sm">
                   <div className="flex justify-between text-[#666]">
-                    <span>Promoção principal</span>
+                    <span>{text.checkout.mainPromotion}</span>
                     <b>{formatPrice(mainPrice)}</b>
                   </div>
                   {(orderBump?.items ?? [])
@@ -543,7 +534,7 @@ export function PurchaseModal({
                       </div>
                     ))}
                   <div className="mt-2 flex justify-between border-t border-[#ddd5d0] pt-2 text-base font-extrabold text-[#292929]">
-                    <span>Total</span>
+                    <span>{text.checkout.total}</span>
                     <span>{formatPrice(checkoutPrice)}</span>
                   </div>
                 </div>
@@ -563,12 +554,14 @@ export function PurchaseModal({
                 {loading ? (
                   <span className="flex w-full items-center justify-center gap-2">
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    Gerando PIX...
+                    {text.checkout.generatingPix}
                   </span>
                 ) : (
                   <>
                     <span>
-                      {plan?.promotionId ? plan.ctaText || "Aproveitar promoção" : "Gerar PIX"}
+                      {plan?.promotionId
+                        ? plan.ctaText || text.checkout.usePromotion
+                        : text.checkout.generatePix}
                     </span>
                     <span className="inline-flex items-center gap-2">
                       {formatPrice(checkoutPrice)}
@@ -598,6 +591,7 @@ function SuccessView({
   paymentCheckError: string | null;
   onCheckPayment: () => void;
 }) {
+  const text = usePublicText();
   const [copied, setCopied] = useState(false);
   const [secondsRemaining, setSecondsRemaining] = useState(5 * 60);
 
@@ -641,16 +635,16 @@ function SuccessView({
       >
         <Timer className="h-5 w-5 sm:h-7 sm:w-7" />
         {secondsRemaining > 0
-          ? `Garanta seu acesso nos próximos ${countdownLabel}`
-          : "Tempo encerrado, pague agora para não perder descontos especiais"}
+          ? text.checkout.guarantee(countdownLabel)
+          : text.checkout.expiredOffer}
       </div>
       <div className="mt-3 w-full rounded-2xl border border-[#ffd7c4] bg-[#fff7f1] p-3 text-left shadow-sm sm:mt-4 sm:p-4">
         <p className="text-sm font-semibold leading-relaxed text-[#4f443f] sm:text-base">
-          🎁 Pague agora e receba meu contato exclusivo de presente.
+          {text.checkout.gift}
         </p>
       </div>
       <div className="mt-2 text-center leading-tight sm:mt-3">
-        <p className="text-xs font-medium text-[#777]">Total</p>
+        <p className="text-xs font-medium text-[#777]">{text.checkout.total}</p>
         <p className="mt-1 text-lg font-extrabold text-[#333]">{formatPrice(amount)}</p>
       </div>
       <div className="mx-auto mt-2 w-fit rounded-2xl border border-[#e2e2e2] bg-white p-2 sm:mt-3">
@@ -659,7 +653,7 @@ function SuccessView({
           size={160}
           level="M"
           marginSize={1}
-          title={`QR Code Pix de ${formatPrice(amount)}`}
+          title={text.checkout.pixTitle(formatPrice(amount))}
           className="h-auto w-[min(46vw,160px)]"
         />
       </div>
@@ -672,10 +666,10 @@ function SuccessView({
         onClick={copyPix}
         className="mt-2 min-h-14 w-full rounded-2xl bg-gradient-to-r from-[#ff6542] to-[#ff7b22] px-4 py-3 text-base font-extrabold text-white shadow-sm sm:mt-3"
       >
-        {copied ? "✓ CÓDIGO PIX COPIADO" : "📋 COPIAR CÓDIGO PIX"}
+        {copied ? text.checkout.copiedPix : text.checkout.copyPix}
       </button>
       <p className="mt-2 text-center text-[13px] font-medium text-[#747474]">
-        🔒 Pagamento seguro&nbsp; • &nbsp;⚡ Liberação automática
+        {text.checkout.securePayment}&nbsp; • &nbsp;{text.checkout.automaticRelease}
       </p>
       <button
         type="button"
@@ -690,12 +684,12 @@ function SuccessView({
         {checkingPayment ? (
           <>
             <Loader2 className="h-5 w-5 animate-spin" />
-            Confirmando pagamento...
+            {text.checkout.confirmingPayment}
           </>
         ) : (
           <>
             <RefreshCw className="h-5 w-5" />
-            Verificar pagamento
+            {text.checkout.checkPayment}
           </>
         )}
       </button>
@@ -709,6 +703,7 @@ function SuccessView({
 }
 
 function ApprovedView({ modelName, modelUsername }: { modelName: string; modelUsername: string }) {
+  const text = usePublicText();
   return (
     <div className="grid min-h-[32rem] place-items-center px-2 py-8 text-center">
       <div>
@@ -716,12 +711,11 @@ function ApprovedView({ modelName, modelUsername }: { modelName: string; modelUs
           <CheckCircle2 className="h-11 w-11" />
         </div>
         <p className="mt-6 text-sm font-black uppercase tracking-[0.16em] text-emerald-400">
-          Pagamento aprovado
+          {text.checkout.approved}
         </p>
-        <h2 className="mt-2 text-2xl font-black sm:text-3xl">Seu acesso está liberado</h2>
+        <h2 className="mt-2 text-2xl font-black sm:text-3xl">{text.checkout.accessReleased}</h2>
         <p className="mx-auto mt-3 max-w-sm text-sm leading-relaxed text-muted-foreground sm:text-base">
-          A galeria de <b className="text-foreground">{modelName}</b> já pertence à sua conta e
-          ficará disponível permanentemente em Minhas Galerias.
+          {text.checkout.approvedBody(modelName)}
         </p>
         <button
           onClick={() => {
@@ -729,7 +723,7 @@ function ApprovedView({ modelName, modelUsername }: { modelName: string; modelUs
           }}
           className="btn-primary mt-8 min-h-14 w-full rounded-2xl px-6 py-4 text-base font-black shadow-lg shadow-primary/20"
         >
-          Acessar
+          {text.checkout.access}
         </button>
       </div>
     </div>
@@ -750,11 +744,14 @@ function Field({
   optional?: boolean;
   children: React.ReactNode;
 }) {
+  const text = usePublicText();
   return (
     <label className="block">
       <span className="mb-1.5 block text-sm font-bold text-[#333]">
         {label} {required && <span className="text-primary">*</span>}
-        {optional && <span className="ml-1 font-medium text-[#777]">(opcional)</span>}
+        {optional && (
+          <span className="ml-1 font-medium text-[#777]">({text.checkout.optional})</span>
+        )}
       </span>
       {children}
     </label>

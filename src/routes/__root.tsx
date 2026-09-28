@@ -17,6 +17,7 @@ import { captureMarketingAttribution } from "../lib/marketing-attribution";
 import { getErrorMessage, isChunkLoadError } from "../lib/error-recovery";
 import { ADMIN_PWA_BOOTSTRAP_SCRIPT } from "../lib/admin-pwa-bootstrap";
 import { RouteLoadingOverlay } from "../components/ui/RouteLoadingOverlay";
+import { PublicLocaleProvider } from "../lib/locale";
 
 const CLARITY_PROJECT_ID = "xu390fh7gy";
 const GOOGLE_TAG_ID = "G-N90DLL0BJ4";
@@ -347,13 +348,15 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
-      <GlobalNavigationLoading />
-      <AnonymousPresenceTracker />
-      <AgeGate />
-      <DeferredAnalytics />
-      <PublicContentProtection />
+      <PublicLocaleProvider>
+        {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+        <Outlet />
+        <GlobalNavigationLoading />
+        <AnonymousPresenceTracker />
+        <AgeGate />
+        <DeferredAnalytics />
+        <PublicContentProtection />
+      </PublicLocaleProvider>
     </QueryClientProvider>
   );
 }
