@@ -40,64 +40,6 @@ async function removeR2Paths(paths: Iterable<string>) {
   await Promise.all([...paths].filter(isR2Reference).map((path) => removeR2Reference(path)));
 }
 
-/**
- * Bootstraps the very first admin account. Only works while `admin_users` is
- * empty. Creates the auth user (if it doesn't exist) and inserts the
- * admin_users row.
- */
-export const bootstrapFirstAdmin = createServerFn({ method: "POST" })
-  .inputValidator((data: { email: string; password: string; name?: string }) => {
-    if (!data?.email || !data?.password) throw new Error("Missing credentials");
-    return data;
-  })
-  .handler(async ({ data }) => {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-
-    const { count, error: countErr } = await supabaseAdmin
-      .from("admin_users")
-      .select("id", { count: "exact", head: true });
-    if (countErr) throw countErr;
-    if ((count ?? 0) > 0) {
-      throw new Error("Já existe um administrador cadastrado.");
-    }
-
-    // Try to find existing auth user by email
-    const { data: list, error: listErr } = await supabaseAdmin.auth.admin.listUsers({
-      page: 1,
-      perPage: 200,
-    });
-    if (listErr) throw listErr;
-    let authUser = list.users.find(
-      (u) => (u.email ?? "").toLowerCase() === data.email.toLowerCase(),
-    );
-
-    if (!authUser) {
-      const { data: created, error: createErr } = await supabaseAdmin.auth.admin.createUser({
-        email: data.email,
-        password: data.password,
-        email_confirm: true,
-      });
-      if (createErr) throw createErr;
-      authUser = created.user!;
-    } else {
-      // Reset password to match provided value
-      await supabaseAdmin.auth.admin.updateUserById(authUser.id, {
-        password: data.password,
-        email_confirm: true,
-      });
-    }
-
-    const { error: insertErr } = await supabaseAdmin.from("admin_users").insert({
-      auth_user_id: authUser.id,
-      email: data.email,
-      name: data.name ?? data.email.split("@")[0],
-      is_active: true,
-    });
-    if (insertErr) throw insertErr;
-
-    return { ok: true };
-  });
-
 /** Creates an admin user (auth + admin_users) — callable only by existing admins. */
 export const createAdminUser = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])

@@ -3,8 +3,6 @@ import { useEffect, useState } from "react";
 import { Lock, Loader2 } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { supabase } from "@/integrations/supabase/client";
-import { useServerFn } from "@tanstack/react-start";
-import { bootstrapFirstAdmin } from "@/lib/admin.functions";
 import { fetchAdminIdentity } from "@/lib/admin-helpers";
 
 export const Route = createFileRoute("/admin/login")({
@@ -24,7 +22,6 @@ function AdminLogin() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const bootstrap = useServerFn(bootstrapFirstAdmin);
 
   // If already signed in as admin, jump to dashboard.
   useEffect(() => {
@@ -42,17 +39,7 @@ function AdminLogin() {
     setError(null);
     setLoading(true);
     try {
-      let signIn = await supabase.auth.signInWithPassword({ email, password });
-      if (signIn.error && /invalid/i.test(signIn.error.message)) {
-        // Try to bootstrap the first admin, then retry login.
-        try {
-          await bootstrap({ data: { email, password } });
-          signIn = await supabase.auth.signInWithPassword({ email, password });
-        } catch (bootErr) {
-          // ignore bootstrap error — surface original login error below
-          console.warn("[admin] bootstrap skipped:", bootErr);
-        }
-      }
+      const signIn = await supabase.auth.signInWithPassword({ email, password });
       if (signIn.error) throw signIn.error;
 
       const ident = await fetchAdminIdentity();
