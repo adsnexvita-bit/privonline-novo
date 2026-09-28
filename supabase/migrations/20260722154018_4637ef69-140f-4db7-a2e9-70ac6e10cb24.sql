@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.apply_order_status_side_effects() FROM PUBLIC, anon, authenticated;

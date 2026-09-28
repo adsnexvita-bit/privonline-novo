@@ -1,0 +1,25 @@
+{
+  "name": "Privadinhos Online — Dashboard",
+  "short_name": "Privadinhos",
+  "description": "Dashboard administrativa e notificações de vendas aprovadas.",
+  "id": "/admin",
+  "start_url": "/admin?source=pwa",
+  "scope": "/admin",
+  "display": "standalone",
+  "background_color": "#faf8f6",
+  "theme_color": "#f04400",
+  "icons": [
+    {
+      "src": "/assets/pwa/privadinhos-admin-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/pwa/privadinhos-admin-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

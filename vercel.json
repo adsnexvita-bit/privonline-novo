@@ -1,0 +1,9 @@
+{
+  "framework": "tanstack-start",
+  "crons": [
+    {
+      "path": "/api/internal/reconcile-payments?scheduled=1&limit=50&hours=720",
+      "schedule": "0 3 * * *"
+    }
+  ]
+}
