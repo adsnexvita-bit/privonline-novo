@@ -32,6 +32,7 @@ async function choosePaymentProvider(
   const settings = readCheckoutSettings(data?.details);
   if (settings.paymentProviderMode === "pushinpay") return "pushinpay";
   if (settings.paymentProviderMode === "onpay") return "onpay";
+  if (settings.paymentProviderMode === "xpag") return "xpag";
   if (settings.paymentProviderMode === "split") return chooseSplitPaymentProvider(settings);
   return "syncpay";
 }

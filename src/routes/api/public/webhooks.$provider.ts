@@ -8,7 +8,12 @@ export const Route = createFileRoute("/api/public/webhooks/$provider")({
         const provider = String(params.provider ?? "unknown")
           .toLowerCase()
           .slice(0, 32);
-        if (provider !== "syncpay" && provider !== "pushinpay" && provider !== "onpay") {
+        if (
+          provider !== "syncpay" &&
+          provider !== "pushinpay" &&
+          provider !== "onpay" &&
+          provider !== "xpag"
+        ) {
           return new Response("Provider not found", { status: 404 });
         }
         if (provider === "syncpay") {
@@ -18,6 +23,10 @@ export const Route = createFileRoute("/api/public/webhooks/$provider")({
         if (provider === "onpay") {
           const { receiveOnPayWebhook } = await import("@/lib/onpay-webhook.server");
           return receiveOnPayWebhook(request);
+        }
+        if (provider === "xpag") {
+          const { receiveXPagWebhook } = await import("@/lib/xpag.server");
+          return receiveXPagWebhook(request);
         }
         const bodyText = await request.text();
         console.info("payment:webhook_received", { provider, bytes: bodyText.length });

@@ -69,7 +69,12 @@ export async function processPaymentConfirmation(
   if (order.transaction_identifier !== transactionId) {
     throw new Error("A transação consultada diverge do pedido.");
   }
-  if (order.payment_provider !== "syncpay" && order.payment_provider !== "pushinpay" && order.payment_provider !== "onpay") {
+  if (
+    order.payment_provider !== "syncpay" &&
+    order.payment_provider !== "pushinpay" &&
+    order.payment_provider !== "onpay" &&
+    order.payment_provider !== "xpag"
+  ) {
     throw new Error("A operadora do pedido não é suportada.");
   }
   const orderProvider = order.payment_provider;

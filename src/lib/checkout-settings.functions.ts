@@ -7,7 +7,7 @@ async function admin() {
   return supabaseAdmin;
 }
 
-export type PaymentProviderMode = "syncpay" | "pushinpay" | "onpay" | "split";
+export type PaymentProviderMode = "syncpay" | "pushinpay" | "onpay" | "xpag" | "split";
 export type CheckoutSettings = {
   instantPixEnabled: boolean;
   paymentProviderMode: PaymentProviderMode;
@@ -38,7 +38,9 @@ export function readCheckoutSettings(details: unknown): CheckoutSettings {
     instantPixEnabled:
       typeof record.instant_pix_enabled === "boolean" ? record.instant_pix_enabled : true,
     paymentProviderMode:
-      mode === "pushinpay" || mode === "onpay" || mode === "split" ? mode : "syncpay",
+      mode === "pushinpay" || mode === "onpay" || mode === "xpag" || mode === "split"
+        ? mode
+        : "syncpay",
     syncPayPercentage,
     pushinPayPercentage: hasCompleteDistribution ? pushinPayPercentage : 100 - syncPayPercentage,
     onPayPercentage: hasCompleteDistribution ? onPayPercentage : 0,
@@ -90,13 +92,19 @@ export const getAdminCheckoutSettings = createServerFn({ method: "GET" })
     if (error) throw new Error("Não foi possível consultar a configuração do checkout.");
 
     const settings = readCheckoutSettings(data?.details);
-    const { getOnPayCredentialRecord, getPushinPayCredentialRecord, getSyncPayCredentialRecord } =
-      await import("./payment-credentials.server");
-    const [credentials, pushinPayCredentials, syncPayCredentials] = await Promise.all([
-      getOnPayCredentialRecord(),
-      getPushinPayCredentialRecord(),
-      getSyncPayCredentialRecord(),
-    ]);
+    const {
+      getOnPayCredentialRecord,
+      getPushinPayCredentialRecord,
+      getSyncPayCredentialRecord,
+      getXPagCredentialRecord,
+    } = await import("./payment-credentials.server");
+    const [credentials, pushinPayCredentials, syncPayCredentials, xpagCredentials] =
+      await Promise.all([
+        getOnPayCredentialRecord(),
+        getPushinPayCredentialRecord(),
+        getSyncPayCredentialRecord(),
+        getXPagCredentialRecord(),
+      ]);
     return {
       ...settings,
       syncPay: {
@@ -154,6 +162,23 @@ export const getAdminCheckoutSettings = createServerFn({ method: "GET" })
             : null,
         webhookPath: "/api/public/webhooks/pushinpay",
       },
+      xpag: {
+        clientIdConfigured: Boolean(
+          xpagCredentials.client_id_encrypted || process.env.XPAG_CLIENT_ID,
+        ),
+        clientSecretConfigured: Boolean(
+          xpagCredentials.client_secret_encrypted || process.env.XPAG_CLIENT_SECRET,
+        ),
+        clientIdHint:
+          typeof xpagCredentials.client_id_hint === "string"
+            ? xpagCredentials.client_id_hint
+            : null,
+        clientSecretHint:
+          typeof xpagCredentials.client_secret_hint === "string"
+            ? xpagCredentials.client_secret_hint
+            : null,
+        webhookPath: "/api/public/webhooks/xpag",
+      },
     };
   });
 
@@ -175,6 +200,7 @@ export const updateCheckoutSettings = createServerFn({ method: "POST" })
         paymentProviderMode:
           raw?.paymentProviderMode === "pushinpay" ||
           raw?.paymentProviderMode === "onpay" ||
+          raw?.paymentProviderMode === "xpag" ||
           raw?.paymentProviderMode === "split"
             ? raw.paymentProviderMode
             : ("syncpay" as const),
@@ -442,5 +468,74 @@ export const updateOnPayCredentials = createServerFn({ method: "POST" })
       } as never,
     });
     if (error) throw new Error("Não foi possível salvar as credenciais da ONPAY.");
+    return { success: true };
+  });
+
+export const updateXPagCredentials = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((raw: { clientId?: string; clientSecret?: string }) => ({
+    clientId: String(raw?.clientId ?? "")
+      .trim()
+      .slice(0, 1000),
+    clientSecret: String(raw?.clientSecret ?? "")
+      .trim()
+      .slice(0, 1000),
+  }))
+  .handler(async ({ context, data }) => {
+    const { data: isAdmin, error: adminError } = await context.supabase.rpc("is_admin", {
+      _auth_user_id: context.userId,
+    });
+    if (adminError || !isAdmin) throw new Error("Acesso restrito a administradores.");
+    const {
+      credentialHint,
+      encryptPaymentCredential,
+      getXPagCredentialRecord,
+      getXPagCredentials,
+    } = await import("./payment-credentials.server");
+    const [current, resolved] = await Promise.all([
+      getXPagCredentialRecord(),
+      getXPagCredentials(),
+    ]);
+    const clientIdEncrypted = data.clientId
+      ? encryptPaymentCredential(data.clientId)
+      : typeof current.client_id_encrypted === "string"
+        ? current.client_id_encrypted
+        : resolved.clientId
+          ? encryptPaymentCredential(resolved.clientId)
+          : "";
+    const clientSecretEncrypted = data.clientSecret
+      ? encryptPaymentCredential(data.clientSecret)
+      : typeof current.client_secret_encrypted === "string"
+        ? current.client_secret_encrypted
+        : resolved.clientSecret
+          ? encryptPaymentCredential(resolved.clientSecret)
+          : "";
+    if (!clientIdEncrypted || !clientSecretEncrypted)
+      throw new Error("Informe o Client ID e o Client Secret da XPag.");
+    const db = await admin();
+    const { data: adminUser } = await db
+      .from("admin_users")
+      .select("id")
+      .eq("auth_user_id", context.userId)
+      .maybeSingle();
+    const { error } = await db
+      .from("admin_audit_logs")
+      .insert({
+        admin_user_id: adminUser?.id ?? null,
+        action: "payment.xpag_credentials_update",
+        entity_type: "payment_credentials",
+        entity_id: null,
+        details: {
+          client_id_encrypted: clientIdEncrypted,
+          client_secret_encrypted: clientSecretEncrypted,
+          client_id_hint: data.clientId
+            ? credentialHint(data.clientId)
+            : (current.client_id_hint ?? null),
+          client_secret_hint: data.clientSecret
+            ? credentialHint(data.clientSecret)
+            : (current.client_secret_hint ?? null),
+        } as never,
+      });
+    if (error) throw new Error("Não foi possível salvar as credenciais da XPag.");
     return { success: true };
   });

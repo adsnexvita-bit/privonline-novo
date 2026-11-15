@@ -7,6 +7,7 @@ type SyncPayCredentials = {
   webhookBearerToken: string;
 };
 type PushinPayCredentials = { apiToken: string; webhookBearerToken: string };
+type XPagCredentials = { clientId: string; clientSecret: string };
 
 function encryptionKey() {
   const configured = process.env.PAYMENT_CREDENTIALS_ENCRYPTION_KEY?.trim();
@@ -84,6 +85,10 @@ export function getPushinPayCredentialRecord() {
   return getPaymentCredentialRecord("payment.pushinpay_credentials_update", "Pushin Pay");
 }
 
+export function getXPagCredentialRecord() {
+  return getPaymentCredentialRecord("payment.xpag_credentials_update", "XPag");
+}
+
 export async function getOnPayCredentials(): Promise<OnPayCredentials> {
   const record = await getOnPayCredentialRecord();
   const apiKey =
@@ -123,6 +128,20 @@ export async function getPushinPayCredentials(): Promise<PushinPayCredentials> {
     process.env.PUSHIN_PAY_WEBHOOK_BEARER_TOKEN?.trim() ||
     "";
   return { apiToken, webhookBearerToken };
+}
+
+export async function getXPagCredentials(): Promise<XPagCredentials> {
+  const record = await getXPagCredentialRecord();
+  return {
+    clientId:
+      decryptServerCredential(record.client_id_encrypted) ||
+      process.env.XPAG_CLIENT_ID?.trim() ||
+      "",
+    clientSecret:
+      decryptServerCredential(record.client_secret_encrypted) ||
+      process.env.XPAG_CLIENT_SECRET?.trim() ||
+      "",
+  };
 }
 
 export function deterministicUuid(value: string) {
