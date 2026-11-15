@@ -7,9 +7,7 @@ function configuredOrigin(provider: PaymentProvider) {
       ? process.env.SYNC_PAY_WEBHOOK_URL
       : provider === "pushinpay"
         ? process.env.PUSHIN_PAY_WEBHOOK_URL
-        : provider === "xpag"
-          ? process.env.XPAG_WEBHOOK_URL
-          : undefined;
+        : undefined;
   const raw =
     process.env.PUBLIC_APP_URL ||
     process.env.APP_URL ||

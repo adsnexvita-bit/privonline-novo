@@ -2,7 +2,6 @@ export const PAYMENT_PROVIDERS = [
   { value: "syncpay", label: "SyncPay" },
   { value: "pushinpay", label: "Pushin Pay" },
   { value: "onpay", label: "ONPAY" },
-  { value: "xpag", label: "XPag" },
 ] as const;
 
 export type PaymentProvider = (typeof PAYMENT_PROVIDERS)[number]["value"];

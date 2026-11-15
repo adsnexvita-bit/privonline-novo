@@ -11,7 +11,6 @@ import {
 } from "./pushinpay.server";
 import { GATEWAY_PRODUCT } from "./gateway-product";
 import { createOnPayCashIn, getOnPayTransaction, mapOnPayStatus } from "./onpay.server";
-import { createXPagCashIn, getXPagTransaction, mapXPagStatus } from "./xpag.server";
 import type { PaymentProvider } from "./payment-provider";
 
 export type { PaymentProvider } from "./payment-provider";
@@ -27,7 +26,6 @@ export async function createPixCharge(
 ) {
   if (provider === "pushinpay") return createPushinPayCashIn(input);
   if (provider === "onpay") return createOnPayCashIn(input);
-  if (provider === "xpag") return createXPagCashIn(input);
   return createSyncPayCashIn({ ...input, description: GATEWAY_PRODUCT.description });
 }
 
@@ -57,16 +55,6 @@ export async function verifyPixCharge(
       gatewayStatus: transaction.status,
       transactionDate: transaction.paidAt ?? null,
     };
-  }
-  if (provider === "xpag") {
-    const transaction = await getXPagTransaction(identifier);
-    if (transaction.id !== identifier && transaction.id !== "")
-      throw new Error("A transação retornada pela XPag é diferente da consultada.");
-    if (!amountsMatch(expectedAmount, transaction.amount))
-      throw new Error("O valor confirmado pela operadora é diferente do valor do pedido.");
-    const status = mapXPagStatus(transaction.status);
-    if (!status) throw new Error("A XPag retornou um status de pagamento desconhecido.");
-    return { status, gatewayStatus: transaction.status, transactionDate: transaction.paidAt };
   }
   const transaction = await getSyncPayTransactionState(identifier);
   if (!amountsMatch(expectedAmount, transaction.amount))
