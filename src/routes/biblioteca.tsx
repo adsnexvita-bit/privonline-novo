@@ -5,6 +5,7 @@ import { Search, ChevronLeft, ChevronRight, AlertTriangle, Frown } from "lucide-
 import { PageShell } from "@/components/PageShell";
 import { ModelCard } from "@/components/ModelCard";
 import { listPublicModels, PAGE_SIZE, type SortOption } from "@/lib/models";
+import { usePublicLocale, translatePublic } from "@/lib/locale";
 
 export const Route = createFileRoute("/biblioteca")({
   head: () => ({
@@ -21,6 +22,8 @@ export const Route = createFileRoute("/biblioteca")({
 });
 
 function Biblioteca() {
+  const locale = usePublicLocale();
+  const t = (value: string) => translatePublic(value, locale);
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
   const [sort, setSort] = useState<SortOption>("featured");
@@ -45,7 +48,7 @@ function Biblioteca() {
       <header className="mb-6 border-b border-border pb-6">
         <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Biblioteca</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Todo o portfólio de criadores disponíveis na plataforma.
+          {t("Todo o portfólio de criadores disponíveis na plataforma.")}
         </p>
       </header>
 
@@ -56,7 +59,7 @@ function Biblioteca() {
             type="search"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            placeholder="Buscar por nome ou usuário"
+            placeholder={t("Buscar por nome ou usuário")}
             className="min-h-12 w-full rounded-xl border border-border bg-surface py-3 pl-11 pr-4 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-primary"
           />
         </form>
@@ -68,10 +71,10 @@ function Biblioteca() {
           }}
           className="min-h-12 rounded-xl border border-border bg-surface px-4 py-3 text-sm font-semibold text-foreground outline-none focus:border-primary"
         >
-          <option value="featured">Destaques</option>
-          <option value="newest">Mais recentes</option>
-          <option value="price_asc">Menor preço</option>
-          <option value="price_desc">Maior preço</option>
+          <option value="featured">{t("Destaques")}</option>
+          <option value="newest">{t("Mais recentes")}</option>
+          <option value="price_asc">{t("Menor preço")}</option>
+          <option value="price_desc">{t("Maior preço")}</option>
         </select>
       </div>
 
@@ -139,36 +142,40 @@ function LoadingGrid() {
 }
 
 function EmptyState({ hasSearch }: { hasSearch: boolean }) {
+  const locale = usePublicLocale();
+  const t = (value: string) => translatePublic(value, locale);
   return (
     <div className="rounded-3xl border border-dashed border-border bg-surface/50 py-16 text-center">
       <Frown className="mx-auto h-10 w-10 text-muted-foreground" />
-      <h2 className="mt-4 text-xl font-bold">Nenhum criador encontrado</h2>
+      <h2 className="mt-4 text-xl font-bold">{t("Nenhum criador encontrado")}</h2>
       <p className="mt-2 text-sm text-muted-foreground">
         {hasSearch
-          ? "Tente ajustar a busca ou o filtro de ordenação."
-          : "Ainda não há criadores disponíveis. Volte em breve."}
+          ? t("Tente ajustar a busca ou o filtro de ordenação.")
+          : t("Ainda não há criadores disponíveis. Volte em breve.")}
       </p>
       <Link
         to="/biblioteca"
         className="btn-primary mt-6 inline-flex rounded-full px-5 py-2.5 text-sm font-bold"
       >
-        Limpar filtros
+        {t("Limpar filtros")}
       </Link>
     </div>
   );
 }
 
 function ErrorState({ onRetry }: { onRetry: () => void }) {
+  const locale = usePublicLocale();
+  const t = (value: string) => translatePublic(value, locale);
   return (
     <div className="rounded-3xl border border-destructive/40 bg-destructive/5 py-16 text-center">
       <AlertTriangle className="mx-auto h-10 w-10 text-destructive" />
-      <h2 className="mt-4 text-xl font-bold">Não conseguimos carregar a biblioteca</h2>
-      <p className="mt-2 text-sm text-muted-foreground">Verifique sua conexão e tente novamente.</p>
+      <h2 className="mt-4 text-xl font-bold">{t("Não conseguimos carregar a biblioteca")}</h2>
+      <p className="mt-2 text-sm text-muted-foreground">{t("Verifique sua conexão e tente novamente.")}</p>
       <button
         onClick={onRetry}
         className="btn-primary mt-6 inline-flex rounded-full px-5 py-2.5 text-sm font-bold"
       >
-        Tentar novamente
+        {t("Tentar novamente")}
       </button>
     </div>
   );

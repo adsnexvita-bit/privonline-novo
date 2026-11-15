@@ -5,6 +5,7 @@ import { CategoryIcon } from "@/components/CategoryIcon";
 import { PageShell } from "@/components/PageShell";
 import { listPublicCategories } from "@/lib/categories";
 import { categoryGradient, parseCategoryColor } from "@/lib/category-color";
+import { usePublicLocale, translatePublic } from "@/lib/locale";
 
 export const Route = createFileRoute("/categorias")({
   loader: ({ context }) =>
@@ -26,6 +27,8 @@ export const Route = createFileRoute("/categorias")({
 });
 
 function CategoriesPage() {
+  const locale = usePublicLocale();
+  const t = (value: string) => translatePublic(value, locale);
   const categories = useQuery({
     queryKey: ["public", "categories"],
     queryFn: listPublicCategories,
@@ -38,9 +41,9 @@ function CategoriesPage() {
         <span className="grid h-10 w-10 place-items-center rounded-xl bg-primary/10 text-primary">
           <Tags className="h-6 w-6" />
         </span>
-        <h1 className="mt-4 text-2xl font-bold tracking-tight sm:text-3xl">Categorias</h1>
+        <h1 className="mt-4 text-2xl font-bold tracking-tight sm:text-3xl">{t("Categorias")}</h1>
         <p className="mt-1 max-w-xl text-sm leading-relaxed text-muted-foreground">
-          Encontre rapidamente o tipo de galeria que deseja explorar.
+          {t("Encontre rapidamente o tipo de galeria que deseja explorar.")}
         </p>
       </header>
 
@@ -81,7 +84,7 @@ function CategoriesPage() {
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-[15px] font-bold">{category.name}</span>
                   <span className="mt-1 block text-xs text-muted-foreground">
-                    {category.models.length} {category.models.length === 1 ? "perfil" : "perfis"}
+                    {category.models.length} {category.models.length === 1 ? t("perfil") : t("perfis")}
                   </span>
                 </span>
                 <ArrowRight className="h-5 w-5 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-primary" />
@@ -91,7 +94,7 @@ function CategoriesPage() {
         </div>
       ) : (
         <div className="rounded-3xl border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
-          Nenhuma categoria disponível no momento.
+          {t("Nenhuma categoria disponível no momento.")}
         </div>
       )}
     </PageShell>

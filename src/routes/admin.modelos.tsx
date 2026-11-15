@@ -1508,6 +1508,11 @@ function ModelGatewayLinks({ modelId, name }: { modelId: string; name: string })
       accent: "from-[#1238f5]/20 via-[#1238f5]/5 to-transparent",
       badge: "bg-[#1238f5]/10 text-[#1238f5] dark:text-blue-300",
     },
+    xpag: {
+      description: "Campanhas direcionadas exclusivamente para pagamentos via XPag.",
+      accent: "from-violet-500/15 via-purple-500/5 to-transparent",
+      badge: "bg-violet-500/10 text-violet-700 dark:text-violet-300",
+    },
   };
 
   return (

@@ -9,6 +9,7 @@ import { listMyAccesses, endPhoneSession } from "@/lib/access.functions";
 import { resolveMediaUrl } from "@/lib/models";
 import { ProgressiveImage } from "@/components/ProgressiveImage";
 import { RouteLoadingOverlay } from "@/components/ui/RouteLoadingOverlay";
+import { usePublicLocale, translatePublic } from "@/lib/locale";
 
 export const Route = createFileRoute("/minhas-modelos")({
   head: () => ({
@@ -26,6 +27,8 @@ export const Route = createFileRoute("/minhas-modelos")({
 });
 
 function MinhasModelos() {
+  const locale = usePublicLocale();
+  const t = (value: string) => translatePublic(value, locale);
   const navigate = useNavigate();
   const fetchAccesses = useServerFn(listMyAccesses);
   const endSession = useServerFn(endPhoneSession);
@@ -66,11 +69,11 @@ function MinhasModelos() {
     <PageShell>
       <header className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-3xl font-black tracking-tight sm:text-4xl">Minhas Galerias</h1>
+          <h1 className="text-3xl font-black tracking-tight sm:text-4xl">{t("Minhas Galerias")}</h1>
           <p className="mt-2 text-sm text-muted-foreground sm:text-base">
             {session
-              ? `Olá, ${session.name}. Suas galerias liberadas aparecem aqui.`
-              : "Acesse com seu telefone para ver as galerias liberadas."}
+              ? `${locale === "es" ? "Hola" : "Olá"}, ${session.name}. ${t("Suas galerias liberadas aparecem aqui.")}`
+              : t("Acesse com seu telefone para ver as galerias liberadas.")}
           </p>
         </div>
         {session ? (
@@ -78,7 +81,7 @@ function MinhasModelos() {
             onClick={onLogout}
             className="inline-flex min-h-11 items-center justify-center gap-1.5 self-start rounded-full border border-border bg-surface px-4 py-2 text-sm font-semibold text-foreground hover:border-primary sm:self-auto"
           >
-            <LogOut className="h-4 w-4" /> Sair
+            <LogOut className="h-4 w-4" /> {t("Sair")}
           </button>
         ) : null}
       </header>

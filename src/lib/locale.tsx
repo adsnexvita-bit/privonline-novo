@@ -5,13 +5,11 @@ export type PublicLocale = "pt-BR" | "es";
 const LocaleContext = createContext<PublicLocale>("pt-BR");
 
 function detectLocale(): PublicLocale {
-  if (typeof navigator === "undefined") return "pt-BR";
-  const languages = navigator.languages?.length ? navigator.languages : [navigator.language];
-  return languages.some((language) => language.toLowerCase().startsWith("es")) ? "es" : "pt-BR";
+  return "es";
 }
 
 export function PublicLocaleProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocale] = useState<PublicLocale>("pt-BR");
+  const [locale, setLocale] = useState<PublicLocale>("es");
 
   useEffect(() => {
     const detected = detectLocale();
@@ -31,6 +29,84 @@ export function usePublicLocale() {
 export function usePublicText() {
   const locale = usePublicLocale();
   return locale === "es" ? esText : ptText;
+}
+
+const publicTranslations: Record<string, string> = {
+  "Todo o portfólio de criadores disponíveis na plataforma.": "Todo el catálogo de creadores disponibles en la plataforma.",
+  "Buscar por nome ou usuário": "Buscar por nombre o usuario",
+  Destaques: "Destacados",
+  "Mais recentes": "Más recientes",
+  "Menor preço": "Precio más bajo",
+  "Maior preço": "Precio más alto",
+  Anterior: "Anterior",
+  "Próxima": "Siguiente",
+  Página: "Página",
+  de: "de",
+  "Nenhum criador encontrado": "No se encontraron creadores",
+  "Tente ajustar a busca ou o filtro de ordenação.": "Intenta ajustar la búsqueda o el filtro de ordenación.",
+  "Ainda não há criadores disponíveis. Volte em breve.": "Aún no hay creadores disponibles. Vuelve pronto.",
+  "Limpar filtros": "Limpiar filtros",
+  "Não conseguimos carregar a biblioteca": "No pudimos cargar la biblioteca",
+  "Verifique sua conexão e tente novamente.": "Comprueba tu conexión e inténtalo de nuevo.",
+  Categorias: "Categorías",
+  "Encontre rapidamente o tipo de galeria que deseja explorar.": "Encuentra rápidamente el tipo de galería que quieres explorar.",
+  perfil: "perfil",
+  perfis: "perfiles",
+  "Nenhuma categoria disponível no momento.": "No hay categorías disponibles en este momento.",
+  "Minha conta": "Mi cuenta",
+  "Acesse suas galerias usando telefone e senha.": "Accede a tus galerías con tu teléfono y contraseña.",
+  "Informe um telefone válido com DDD.": "Informa un teléfono válido con código de área.",
+  "A senha deve ter exatamente 4 números.": "La contraseña debe tener exactamente 4 números.",
+  "As senhas não são iguais.": "Las contraseñas no coinciden.",
+  "Falha ao acessar": "No se pudo acceder",
+  "Seu acesso já está liberado. Crie sua senha para entrar quando quiser.": "Tu acceso ya está liberado. Crea tu contraseña para entrar cuando quieras.",
+  "Crie sua conta para acompanhar suas compras e galerias em um só lugar.": "Crea tu cuenta para seguir tus compras y galerías en un solo lugar.",
+  "Entre com seu telefone e sua senha de 4 números.": "Entra con tu teléfono y tu contraseña de 4 números.",
+  "Você está conectado como": "Has iniciado sesión como",
+  "Ir para minhas galerias": "Ir a mis galerías",
+  "Validando sua compra…": "Validando tu compra…",
+  "Falta só criar sua senha": "Solo falta crear tu contraseña",
+  "Use 4 números fáceis de lembrar para acessar seus conteúdos novamente.": "Usa 4 números fáciles de recordar para volver a acceder a tus contenidos.",
+  Entrar: "Entrar",
+  "Criar conta": "Crear cuenta",
+  "Esqueceu sua senha?": "¿Olvidaste tu contraseña?",
+  "Nome completo": "Nombre completo",
+  "Digite seu nome": "Escribe tu nombre",
+  Senha: "Contraseña",
+  "Senha de 4 números": "Contraseña de 4 números",
+  "Confirme sua senha": "Confirma tu contraseña",
+  "Repetir a senha": "Repite la contraseña",
+  "Acessar conta": "Acceder a la cuenta",
+  "Criar minha conta": "Crear mi cuenta",
+  "Minhas Galerias": "Mis galerías",
+  "Acompanhe as galerias de criadores que você já adquiriu na Privadinhos Online.": "Consulta las galerías de creadores que ya adquiriste en Privadinhos Online.",
+  "Acesse com seu telefone para ver as galerias liberadas.": "Accede con tu teléfono para ver las galerías liberadas.",
+  "Erro ao carregar": "Error al cargar",
+  "Liberado em": "Liberado el",
+  "Entre na sua conta": "Entra en tu cuenta",
+  "Você precisa acessar sua conta para ver suas galerias adquiridas.": "Debes entrar en tu cuenta para ver tus galerías adquiridas.",
+  "Nenhuma galeria adquirida ainda": "Todavía no has adquirido ninguna galería",
+  "Quando você comprar uma galeria, ela aparecerá aqui.": "Cuando compres una galería, aparecerá aquí.",
+  "Explorar biblioteca": "Explorar biblioteca",
+  "Não conseguimos carregar suas galerias": "No pudimos cargar tus galerías",
+  "Documento legal": "Documento legal",
+  "Última atualização": "Última actualización",
+  "Ver perfil": "Ver perfil",
+  "Ver conteúdos": "Ver contenido",
+  "conteúdos secretos": "contenidos secretos",
+  "Tentar novamente": "Intentar de nuevo",
+  "Acessar conteúdo": "Acceder al contenido",
+  "Olá,": "Hola,",
+  "Suas galerias liberadas aparecem aqui.": "Tus galerías desbloqueadas aparecen aquí.",
+  "Sair": "Salir",
+  "Suas galerias adquiridas ficam disponíveis após validar o telefone utilizado na compra.": "Tus galerías adquiridas estarán disponibles después de validar el teléfono usado en la compra.",
+  "Ir para Minha conta": "Ir a Mi cuenta",
+  "Explore a biblioteca e adquira acesso vitalício às galerias dos seus criadores favoritos.": "Explora la biblioteca y adquiere acceso de por vida a las galerías de tus creadores favoritos.",
+  "Nenhum webhook recebido ainda.": "Aún no se recibió ningún webhook.",
+};
+
+export function translatePublic(value: string, locale: PublicLocale): string {
+  return locale === "es" ? publicTranslations[value] ?? value : value;
 }
 
 const ptText = {
@@ -154,7 +230,7 @@ const ptText = {
   },
 } as const;
 
-const esText: typeof ptText = {
+const esText: any = {
   nav: {
     library: "Biblioteca",
     categories: "Categorías",

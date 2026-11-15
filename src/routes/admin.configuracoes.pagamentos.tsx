@@ -11,6 +11,7 @@ import {
   getAdminCheckoutSettings,
   updateCheckoutSettings,
   updateOnPayCredentials,
+  updateXPagCredentials,
   updatePushinPayCredentials,
   updateSyncPayCredentials,
 } from "@/lib/checkout-settings.functions";
@@ -26,14 +27,15 @@ function PaymentSettingsPage() {
   const saveOnPayCredentials = useServerFn(updateOnPayCredentials);
   const savePushinPayCredentials = useServerFn(updatePushinPayCredentials);
   const saveSyncPayCredentials = useServerFn(updateSyncPayCredentials);
+  const saveXPagCredentials = useServerFn(updateXPagCredentials);
   const [instantPixEnabled, setInstantPixEnabled] = useState(false);
   const [paymentProviderMode, setPaymentProviderMode] = useState<
-    "syncpay" | "pushinpay" | "onpay" | "split"
+    "syncpay" | "pushinpay" | "onpay" | "xpag" | "split"
   >("syncpay");
   const [syncPayPercentage, setSyncPayPercentage] = useState(50);
   const [pushinPayPercentage, setPushinPayPercentage] = useState(50);
   const [onPayPercentage, setOnPayPercentage] = useState(0);
-  const [expandedGateway, setExpandedGateway] = useState<"syncpay" | "pushinpay" | "onpay" | null>(
+  const [expandedGateway, setExpandedGateway] = useState<"syncpay" | "pushinpay" | "onpay" | "xpag" | null>(
     null,
   );
   const [loading, setLoading] = useState(true);
@@ -70,6 +72,9 @@ function PaymentSettingsPage() {
     webhookBearerTokenHint: null as string | null,
     webhookPath: "/api/public/webhooks/pushinpay",
   });
+  const [xpagClientId, setXpagClientId] = useState("");
+  const [xpagClientSecret, setXpagClientSecret] = useState("");
+  const [xpagStatus, setXpagStatus] = useState({ clientIdConfigured: false, clientSecretConfigured: false, clientIdHint: null as string | null, clientSecretHint: null as string | null, webhookPath: "/api/public/webhooks/xpag" });
 
   useEffect(() => {
     let active = true;
@@ -84,6 +89,7 @@ function PaymentSettingsPage() {
         setOnPayStatus(settings.onPay);
         setSyncPayStatus(settings.syncPay);
         setPushinPayStatus(settings.pushinPay);
+        setXpagStatus(settings.xpag);
       })
       .catch(
         (reason) =>
@@ -103,7 +109,7 @@ function PaymentSettingsPage() {
   async function persist(
     next: {
       instantPixEnabled?: boolean;
-      paymentProviderMode?: "syncpay" | "pushinpay" | "onpay" | "split";
+      paymentProviderMode?: "syncpay" | "pushinpay" | "onpay" | "xpag" | "split";
       syncPayPercentage?: number;
       pushinPayPercentage?: number;
       onPayPercentage?: number;
@@ -243,6 +249,16 @@ function PaymentSettingsPage() {
     } finally {
       setSaving(false);
     }
+  }
+
+  async function persistXPagCredentials(event: React.FormEvent) {
+    event.preventDefault();
+    if (saving) return;
+    if ((!xpagClientId && !xpagStatus.clientIdConfigured) || (!xpagClientSecret && !xpagStatus.clientSecretConfigured)) { setError("Informe o Client ID e o Client Secret da XPag."); return; }
+    setSaving(true); setError(null); setSuccess(null);
+    try { await saveXPagCredentials({ data: { clientId: xpagClientId, clientSecret: xpagClientSecret } }); const settings = await loadSettings(); setXpagStatus(settings.xpag); setXpagClientId(""); setXpagClientSecret(""); setSuccess("Credenciais da XPag atualizadas com segurança."); }
+    catch (reason) { setError(reason instanceof Error ? reason.message : "Não foi possível salvar as credenciais da XPag."); }
+    finally { setSaving(false); }
   }
 
   return (
@@ -457,6 +473,7 @@ function PaymentSettingsPage() {
                     detail: "Todos os PIX na ONPAY.",
                     icon: onPayLogo,
                   },
+                  { mode: "xpag", label: "XPag", detail: "Todos os PIX na XPag.", icon: undefined },
                   {
                     mode: "split",
                     label: "Alternar",
@@ -608,6 +625,12 @@ function PaymentSettingsPage() {
                   Salvar credenciais ONPAY
                 </button>
               </form>
+            </section>
+          ) : null}
+          {expandedGateway === "xpag" ? (
+            <section className="card-premium order-3 rounded-2xl p-5 sm:p-6">
+              <div className="mb-5 flex items-start gap-3"><span className="grid h-10 w-10 place-items-center rounded-xl bg-violet-600 text-lg font-black text-white">X</span><div><h2 className="font-black">Credenciais da XPag</h2><p className="text-sm text-muted-foreground">As chaves são criptografadas no servidor.</p></div></div>
+              <form onSubmit={persistXPagCredentials} className="space-y-4"><div className="grid gap-4 sm:grid-cols-2"><label className="space-y-1.5 text-sm font-bold">Client ID<input type="password" value={xpagClientId} onChange={(e) => setXpagClientId(e.target.value)} placeholder={xpagStatus.clientIdHint ?? "Client ID da XPag"} className="h-11 w-full rounded-xl border border-border bg-background px-3 font-mono text-sm" /></label><label className="space-y-1.5 text-sm font-bold">Client Secret<input type="password" value={xpagClientSecret} onChange={(e) => setXpagClientSecret(e.target.value)} placeholder={xpagStatus.clientSecretHint ?? "Client Secret da XPag"} className="h-11 w-full rounded-xl border border-border bg-background px-3 font-mono text-sm" /></label></div><div className="rounded-xl border border-border bg-muted/40 p-3 text-sm"><b>URL do webhook</b><code className="mt-1 block break-all text-xs text-muted-foreground">{typeof window === "undefined" ? xpagStatus.webhookPath : `${resolvePublicOrigin(window.location.origin)}${xpagStatus.webhookPath}`}</code></div><button type="submit" disabled={saving || loading} className="h-11 rounded-xl bg-violet-600 px-5 text-sm font-black text-white disabled:opacity-60">Salvar credenciais XPag</button></form>
             </section>
           ) : null}
           {success ? (

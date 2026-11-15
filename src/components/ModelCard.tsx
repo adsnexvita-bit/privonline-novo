@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { BadgeCheck, ChevronRight, Crown, Flame, UserRound } from "lucide-react";
 import { resolveMediaUrl, type PublicModel } from "@/lib/models";
 import { ProgressiveImage } from "@/components/ProgressiveImage";
+import { usePublicLocale, translatePublic } from "@/lib/locale";
 
 export function ModelCard({
   model,
@@ -14,6 +15,8 @@ export function ModelCard({
   priority?: boolean;
   variant?: "home" | "library";
 }) {
+  const locale = usePublicLocale();
+  const t = (value: string) => translatePublic(value, locale);
   const cover = resolveMediaUrl(model.profile_cover_image_path ?? model.cover_image_path, index);
   const profileImage = resolveMediaUrl(model.profile_image_path, index + 1);
   const totalContent = model.custom_posts_count ?? model.photo_count + model.video_count;
@@ -63,7 +66,7 @@ export function ModelCard({
             </div>
             <p className="mt-0.5 truncate text-[13px] text-muted-foreground">@{model.username}</p>
             <span className="mt-3 flex min-h-10 w-full items-center justify-between border-t border-border pt-3 text-sm font-semibold text-primary">
-              Ver perfil
+              {t("Ver perfil")}
               <ChevronRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" aria-hidden="true" />
             </span>
           </div>
@@ -117,12 +120,12 @@ export function ModelCard({
             <span className="inline-flex min-w-0 items-center gap-1.5">
               <Flame className="h-3.5 w-3.5 shrink-0 text-primary sm:h-4 sm:w-4" />
               <span className="font-bold text-foreground">{totalContent}</span>
-              <span className="truncate">conteúdos secretos</span>
+              <span className="truncate">{t("conteúdos secretos")}</span>
             </span>
           </div>
 
           <span className="mt-3 flex min-h-9 w-full items-center justify-between border-t border-border pt-3 text-xs font-bold text-primary sm:text-sm">
-            Ver conteúdos
+            {t("Ver conteúdos")}
             <ChevronRight className="h-4 w-4" aria-hidden="true" />
           </span>
         </div>
